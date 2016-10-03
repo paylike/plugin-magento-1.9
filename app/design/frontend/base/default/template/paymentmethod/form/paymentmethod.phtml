@@ -1,0 +1,40 @@
+<?php
+if (Mage::getStoreConfig('payment/paymentmethod/active')) {
+    ?>
+    <script type="text/javascript">
+        var locale = '<?php echo Mage::app()->getLocale()->getLocaleCode();?>';
+        var popupTitle = '<?php echo Mage::helper('paymentmethod')->getPopupTitle() ?>';
+        var popupDescription = '<?php echo Mage::helper('paymentmethod')->getPopupDescription() ?>';
+        var currency = '<?php echo Mage::app()->getStore()->getCurrentCurrencyCode(); ?>';
+        var publicKey = '<?php echo Mage::helper('paymentmethod')->getPublicKey() ?>';
+        var amount = '<?php echo $this->helper('checkout/cart')->getQuote()->getGrandTotal();?>';
+        var email = '<?php echo Mage::getSingleton('customer/session')->getCustomer()->getEmail();?>';
+        var name = '<?php echo Mage::getSingleton('customer/session')->getCustomer()->getName();?>';
+        var paylike = Paylike(publicKey);
+        document.querySelector('#dt_method_paymentmethod').addEventListener('click', pay);
+        function pay() {
+            document.getElementById("transaction-id").removeAttribute("disabled");
+            var amountpaylike = amount * 100;
+            paylike.popup({
+                locale: locale,
+                currency: currency,
+                amount: amountpaylike,
+                title: popupTitle,
+                description: popupDescription,
+                name: name,
+                email: email,
+
+            }, function (err, res) {
+                if (err) {
+                    if (err == 'closed') {
+                        document.getElementById('p_method_paymentmethod').checked = false;
+                    }
+                    return console.log(err);
+                }
+                document.getElementById("transaction-id").value = res.transaction.id.toString();
+                payment.save()
+            });
+        }
+    </script>
+    <input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
+<?php }
