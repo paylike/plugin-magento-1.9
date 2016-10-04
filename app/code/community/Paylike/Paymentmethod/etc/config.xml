@@ -52,11 +52,11 @@
     <default>
         <payment>
             <paymentmethod>
-                <active>1</active>
+                <active>0</active>
                 <model>paymentmethod/paymentmethod</model>
                 <order_status>processing</order_status>
-                <title>Paylike Payment Method</title>
-                <allowspecific>0</allowspecific>
+                <title>Credit Card(Paylike)</title>
+                <pop_up_title>Payment</pop_up_title>
                 <payment_action>authorize_capture</payment_action>
             </paymentmethod>
         </payment>

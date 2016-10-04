@@ -47,15 +47,6 @@
                             <show_in_store>0</show_in_store>
                         </public_key>
 
-                        <gateway_url translate="label">
-                            <label>Gateway url</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>7</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </gateway_url>
-
                         <pop_up_title translate="label">
                             <label>Popup title</label>
                             <frontend_type>text</frontend_type>
