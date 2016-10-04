@@ -29,14 +29,6 @@
                             <show_in_store>1</show_in_store>
                         </title>
 
-                        <merchant_id translate="label">
-                            <label>Merchant ID</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>3</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </merchant_id>
                         <api_key translate="label">
                             <label>Api key</label>
                             <frontend_type>text</frontend_type>
@@ -45,6 +37,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </api_key>
+
                         <public_key translate="label">
                             <label>Public key</label>
                             <frontend_type>text</frontend_type>
@@ -53,6 +46,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </public_key>
+
                         <gateway_url translate="label">
                             <label>Gateway url</label>
                             <frontend_type>text</frontend_type>
@@ -70,6 +64,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </pop_up_title>
+
                         <pop_up_description translate="label">
                             <label>Popup description</label>
                             <frontend_type>text</frontend_type>
@@ -88,6 +83,7 @@
                             <show_in_store>0</show_in_store>
                             <sort_order>15</sort_order>
                         </order_status>
+
                         <payment_action translate="label">
                             <label>Payment action</label>
                             <frontend_type>select</frontend_type>
@@ -97,7 +93,9 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </payment_action>
+
                     </fields>
+
                 </paymentmethod>
             </groups>
         </payment>

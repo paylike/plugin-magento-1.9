@@ -1,4 +1,10 @@
 <?php
+$quote = Mage::getSingleton('checkout/session')->getQuote();
+$email = $quote->getBillingAddress()->getEmail();
+$name = $quote->getBillingAddress()->getName();
+if (!$email) $email = $quote->getCustomerEmail();
+if (!$name) $name = $quote->getCustomerName();
+
 if (Mage::getStoreConfig('payment/paymentmethod/active')) {
     ?>
     <script type="text/javascript">
@@ -8,8 +14,8 @@ if (Mage::getStoreConfig('payment/paymentmethod/active')) {
         var currency = '<?php echo Mage::app()->getStore()->getCurrentCurrencyCode(); ?>';
         var publicKey = '<?php echo Mage::helper('paymentmethod')->getPublicKey() ?>';
         var amount = '<?php echo $this->helper('checkout/cart')->getQuote()->getGrandTotal();?>';
-        var email = '<?php echo Mage::getSingleton('customer/session')->getCustomer()->getEmail();?>';
-        var name = '<?php echo Mage::getSingleton('customer/session')->getCustomer()->getName();?>';
+        var email = '<?php echo $email ;?>';
+        var name = '<?php echo $name ;?>';
         var paylike = Paylike(publicKey);
         document.querySelector('#dt_method_paymentmethod').addEventListener('click', pay);
         function pay() {

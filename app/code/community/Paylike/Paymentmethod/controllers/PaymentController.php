@@ -4,6 +4,6 @@ class Paylike_Paymentmethod_PaymentController extends Mage_Core_Controller_Front
 {
     public function indexAction()
     {
-		exit();
+        exit();
     }
 }

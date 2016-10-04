@@ -42,7 +42,7 @@ class PaylikeTransactions extends PaylikeSubsystem
     }
 
     public function capture($transactionId, $opts)
-    {
+    {		
         return $this->request('POST', '/transactions/' . $transactionId . '/captures', $opts);
     }
 
@@ -86,7 +86,7 @@ class PaylikeSubsystem
 
         $raw = curl_exec($c);
         $code = curl_getinfo($c, CURLINFO_HTTP_CODE);
-
+ 
         curl_close($c);
 
         if ($code < 200 || $code > 299)

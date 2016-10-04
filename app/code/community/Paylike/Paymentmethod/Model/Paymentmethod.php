@@ -13,7 +13,6 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
     protected $_canVoid = true;
     const REQUEST_TYPE_AUTH_CAPTURE = 'AUTH_CAPTURE';
     const REQUEST_TYPE_AUTH_ONLY = 'AUTH_ONLY';
-    const REQUEST_TYPE_CAPTURE_ONLY = 'CAPTURE_ONLY';
     protected $_code = 'paymentmethod';
     protected $_formBlockType = 'paymentmethod/form_paymentmethod';
     protected $_infoBlockType = 'paymentmethod/info_paymentmethod';
@@ -28,22 +27,24 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
 
     public function capture(Varien_Object $payment, $amount)
     {
-        $arr = array('amount' => $amount,
+        $arr = array('amount' => $amount * 100,
             'currency' => Mage::app()->getStore()->getCurrentCurrencyCode(),
             'descriptor' => 'Capture',
         );
         if ($amount <= 0) {
-            Mage::throwException('Invalid amount for authorization.');
+            $errormsg= $this->__('Invalid amount for authorization.');
+            Mage::throwException($errormsg);
         }
         $paylike = new Paylike($this->getApiKey());
         if (!$payment->getLastTransId()) {
             $payment->setLastTransId($payment->getPaylikeTransactionId());
         }
+
         $result = $paylike->transactions->capture($payment->getLastTransId(), $arr);
         if ($result == false) {
-            Mage::throwException('Transaction failed');
-        }
-        if ($result == true) {
+            $errormsg = $this->__('Transaction failed');
+            Mage::throwException($errormsg);
+        } else {
 
             $payment->setTransactionId($payment->getPaylikeTransactionId());
             $payment->setIsTransactionClosed(1);
@@ -53,42 +54,36 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
 
     public function refund(Varien_Object $payment, $amount)
     {
-        $arr = array('amount' => $amount,
+        $arr = array('amount' => $amount * 100,
             'descriptor' => 'refund',
         );
         if ($amount <= 0) {
-            Mage::throwException('Invalid amount for authorization.');
+            Mage::throwException($this->__('Invalid amount for authorization.'));
         }
         $paylike = new Paylike($this->getApiKey());
         $result = $paylike->transactions->refund($payment->getLastTransId(), $arr);
         if ($result) {
-            return parent::refund($payment, $amount);
+            return $this;
         } else {
-            Mage::throwException('Invalid transaction.');
+            $errormsg= $this->__('Invalid transaction.');
+            Mage::throwException($errormsg);
         }
 
     }
 
     public function void(Varien_Object $payment)
     {
-        $amount = floor($payment->getAmountAuthorized());
-        $arr = array('amount' => $amount,
+        $amount = $payment->getAmountAuthorized();
+        $arr = array('amount' => $amount * 100,
         );
         $paylike = new Paylike($this->getApiKey());
         $result = $paylike->transactions->voids($payment->getLastTransId(), $arr);
         if ($result) {
-            return parent::void($payment);
+            return $this;
         } else {
-            Mage::throwException('Invalid Request.');
+            $errormsg=$this->__('Invalid Request.');
+            Mage::throwException($errormsg);
         }
-    }
-
-    protected function _place($payment, $amount, $requestType)
-    {
-        $payment->setAmount($amount);
-        $request = $this->_buildRequest($payment);
-        $this->_postRequest($request);
-
     }
 
     public function isAvailable($quote = null)
@@ -116,17 +111,6 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
         return $this;
     }
 
-    protected function _getRequest()
-    {
-        $request = new Varien_Object();
-        return $request;
-    }
-
-    protected function getMerchantId()
-    {
-        return Mage::getStoreConfig('payment/paymentmethod/merchant_id');
-    }
-
     protected function getApiKey()
     {
         return Mage::getStoreConfig('payment/paymentmethod/api_key');
@@ -141,6 +125,4 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
     {
         return $this->_canVoid;
     }
-
-
 }

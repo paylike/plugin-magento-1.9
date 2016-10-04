@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <config>
     <modules>
         <Paylike_Paymentmethod>
@@ -13,27 +14,32 @@
                     <to_order_payment>*</to_order_payment>
                 </paylike_transaction_id>
             </sales_convert_quote_payment>
+
             <sales_convert_order_payment>
                 <paylike_transaction_id>
                     <to_quote_payment>*</to_quote_payment>
                 </paylike_transaction_id>
             </sales_convert_order_payment>
         </fieldsets>
+
         <helpers>
             <paymentmethod>
                 <class>Paylike_Paymentmethod_Helper</class>
             </paymentmethod>
         </helpers>
+
         <blocks>
             <paymentmethod>
                 <class>Paylike_Paymentmethod_Block</class>
             </paymentmethod>
         </blocks>
+
         <models>
             <paymentmethod>
                 <class>Paylike_Paymentmethod_Model</class>
             </paymentmethod>
         </models>
+
         <resources>
             <paymentmethod_setup>
                 <setup>
@@ -42,6 +48,7 @@
             </paymentmethod_setup>
         </resources>
     </global>
+
     <default>
         <payment>
             <paymentmethod>
@@ -53,7 +60,9 @@
                 <payment_action>authorize_capture</payment_action>
             </paymentmethod>
         </payment>
+
     </default>
+
     <frontend>
         <routers>
             <paymentmethod>
@@ -64,6 +73,7 @@
                 </args>
             </paymentmethod>
         </routers>
+
         <layout>
             <updates>
                 <paymentmethod>
@@ -71,16 +81,18 @@
                 </paymentmethod>
             </updates>
         </layout>
+
         <translate>
-                <modules>
-                    <paymentmethod>
-                        <files>
-                            <default>Paylike.csv</default>
-                        </files>
-                    </paymentmethod>
-                </modules>
-            </translate>
+            <modules>
+                <paymentmethod>
+                    <files>
+                        <default>Paylike_Paymentmethod.csv</default>
+                    </files>
+                </paymentmethod>
+            </modules>
+        </translate>
     </frontend>
+
     <adminhtml>
         <translate>
             <modules>
@@ -92,4 +104,5 @@
             </modules>
         </translate>
     </adminhtml>
+
 </config>
