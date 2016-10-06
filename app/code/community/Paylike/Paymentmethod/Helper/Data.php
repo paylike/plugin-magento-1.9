@@ -1,7 +1,8 @@
 <?php
+
 class Paylike_Paymentmethod_Helper_Data extends Mage_Core_Helper_Abstract
 {
-    
+
     public function getPopupTitle()
     {
         return Mage::getStoreConfig('payment/paymentmethod/pop_up_title');

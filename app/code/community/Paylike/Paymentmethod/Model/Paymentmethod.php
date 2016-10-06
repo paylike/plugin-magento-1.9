@@ -1,8 +1,11 @@
 <?php
-require_once dirname(__FILE__) . '/../Model/Paylike.php';
 
+require_once dirname(__FILE__) . '/../Model/Paylike.php';
 class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Method_Cc
 {
+    const REQUEST_TYPE_AUTH_CAPTURE = 'AUTH_CAPTURE';
+    const REQUEST_TYPE_AUTH_ONLY = 'AUTH_ONLY';
+
     protected $_isGateway = true;
     protected $_canAuthorize = true;
     protected $_canUseCheckout = true;
@@ -11,8 +14,6 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
     protected $_canRefund = true;
     protected $_canRefundInvoicePartial = true;
     protected $_canVoid = true;
-    const REQUEST_TYPE_AUTH_CAPTURE = 'AUTH_CAPTURE';
-    const REQUEST_TYPE_AUTH_ONLY = 'AUTH_ONLY';
     protected $_code = 'paymentmethod';
     protected $_formBlockType = 'paymentmethod/form_paymentmethod';
     protected $_infoBlockType = 'paymentmethod/info_paymentmethod';

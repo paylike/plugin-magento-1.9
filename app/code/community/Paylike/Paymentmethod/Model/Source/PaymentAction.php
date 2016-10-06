@@ -15,5 +15,5 @@ class Paylike_Paymentmethod_Model_Source_PaymentAction
             ),
         );
     }
-
 }
+
