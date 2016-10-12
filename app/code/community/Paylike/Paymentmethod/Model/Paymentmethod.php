@@ -26,7 +26,7 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
         $paylike = new Paylike($this->getApiKey());
         $result = $paylike->transactions->fetch($payment->getTransactionId());
         if ($transaction = $result->transaction) {
-            if ($transaction->id != $payment->getTransactionId() || $transaction->amount != $amount * 100 || Mage::app()->getStore()->getCurrentCurrencyCode() != $transaction->currency) {
+            if ($transaction->amount != $amount * 100 || Mage::app()->getStore()->getCurrentCurrencyCode() != $transaction->currency) {
                 $errormsg = $this->__('Invalid transaction.');
                 Mage::throwException($errormsg);
             }
@@ -42,7 +42,6 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
         $paylike = new Paylike($this->getApiKey());
         $arr = array('amount' => $amount * 100,
             'currency' => Mage::app()->getStore()->getCurrentCurrencyCode(),
-            'descriptor' => '',
         );
         if ($amount <= 0) {
             $errormsg = $this->__('Invalid amount for authorization.');
@@ -51,16 +50,7 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
         if (!$payment->getLastTransId()) {
             $payment->setLastTransId($payment->getPaylikeTransactionId());
         }
-        $data = $paylike->transactions->fetch($payment->getLastTransId());
-        if ($transaction = $data->transaction) {
-            if ($transaction->id != $payment->getLastTransId() || $transaction->amount != $amount * 100 || Mage::app()->getStore()->getCurrentCurrencyCode() != $transaction->currency) {
-                $errormsg = $this->__('Invalid transaction.');                
-                Mage::throwException($errormsg);
-            }
-        } else {
-            $errormsg = $this->__('Invalid transaction.');
-            Mage::throwException($errormsg);
-        }
+        
         $result = $paylike->transactions->capture($payment->getLastTransId(), $arr);
         if ($result == false) {
             $errormsg = $this->__('Transaction failed');
@@ -75,9 +65,7 @@ class Paylike_Paymentmethod_Model_Paymentmethod extends Mage_Payment_Model_Metho
 
     public function refund(Varien_Object $payment, $amount)
     {
-        $arr = array('amount' => $amount * 100,
-            'descriptor' => '',
-        );
+        $arr = array('amount' => $amount * 100);
         if ($amount <= 0) {
             Mage::throwException($this->__('Invalid amount for authorization.'));
         }
