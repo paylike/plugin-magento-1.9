@@ -8,7 +8,6 @@ if (!$email) {
 if (!$name) {
     $name = $quote->getCustomerName();
 }
-
 if (Mage::getStoreConfig('payment/paymentmethod/active')) {
     ?>
     <script type="text/javascript">
@@ -18,6 +17,10 @@ if (Mage::getStoreConfig('payment/paymentmethod/active')) {
         var currency = '<?php echo Mage::app()->getStore()->getCurrentCurrencyCode(); ?>';
         var publicKey = '<?php echo Mage::helper('paymentmethod')->getPublicKey() ?>';
         var amount = '<?php echo $this->helper('checkout/cart')->getQuote()->getGrandTotal();?>';
+        var quoteId = '<?php echo $this->helper('checkout/cart')->getQuote()->getId();?>';
+        var tax = '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount')?>';
+        var shipping = '<?php echo $this->helper('checkout/cart')->getQuote()->getShippingAddress()->getShippingAmount();?>';
+        var customerIp = '<?php echo Mage::helper('core/http')->getRemoteAddr();?>';
         var email = '<?php echo $email;?>';
         var name = '<?php echo $name;?>';
         var paylike = Paylike(publicKey);
@@ -31,9 +34,14 @@ if (Mage::getStoreConfig('payment/paymentmethod/active')) {
                 amount: amountpaylike,
                 title: popupTitle,
                 description: popupDescription,
-                name: name,
-                email: email,
-
+                custom: {
+                    quoteId: quoteId,
+                    email: email,
+                    name: name,
+                    tax: tax,
+                    shipping: shipping,
+                    customerIp: customerIp,
+                }
             }, function (err, res) {
                 if (err) {
                     if (err == 'closed') {
