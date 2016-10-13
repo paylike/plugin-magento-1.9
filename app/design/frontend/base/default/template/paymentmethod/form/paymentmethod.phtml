@@ -1,0 +1,58 @@
+<?php
+$quote = Mage::getSingleton('checkout/session')->getQuote();
+$email = $quote->getBillingAddress()->getEmail();
+$name = $quote->getBillingAddress()->getName();
+if (!$email) {
+    $email = $quote->getCustomerEmail();
+}
+if (!$name) {
+    $name = $quote->getCustomerName();
+}
+if (Mage::getStoreConfig('payment/paymentmethod/active')) {
+    ?>
+    <script type="text/javascript">
+        var locale = '<?php echo Mage::app()->getLocale()->getLocaleCode();?>';
+        var popupTitle = '<?php echo Mage::helper('paymentmethod')->getPopupTitle() ?>';
+        var popupDescription = '<?php echo Mage::helper('paymentmethod')->getPopupDescription() ?>';
+        var currency = '<?php echo Mage::app()->getStore()->getCurrentCurrencyCode(); ?>';
+        var publicKey = '<?php echo Mage::helper('paymentmethod')->getPublicKey() ?>';
+        var amount = '<?php echo $this->helper('checkout/cart')->getQuote()->getGrandTotal();?>';
+        var quoteId = '<?php echo $this->helper('checkout/cart')->getQuote()->getId();?>';
+        var tax = '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount')?>';
+        var shipping = '<?php echo $this->helper('checkout/cart')->getQuote()->getShippingAddress()->getShippingAmount();?>';
+        var customerIp = '<?php echo Mage::helper('core/http')->getRemoteAddr();?>';
+        var email = '<?php echo $email;?>';
+        var name = '<?php echo $name;?>';
+        var paylike = Paylike(publicKey);
+        document.querySelector('#dt_method_paymentmethod').addEventListener('click', pay);
+        function pay() {
+            document.getElementById("transaction-id").removeAttribute("disabled");
+            var amountpaylike = amount * 100;
+            paylike.popup({
+                locale: locale,
+                currency: currency,
+                amount: amountpaylike,
+                title: popupTitle,
+                description: popupDescription,
+                custom: {
+                    quoteId: quoteId,
+                    email: email,
+                    name: name,
+                    tax: tax,
+                    shipping: shipping,
+                    customerIp: customerIp,
+                }
+            }, function (err, res) {
+                if (err) {
+                    if (err == 'closed') {
+                        document.getElementById('p_method_paymentmethod').checked = false;
+                    }
+                    return console.log(err);
+                }
+                document.getElementById("transaction-id").value = res.transaction.id.toString();
+                payment.save()
+            });
+        }
+    </script>
+    <input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
+<?php }
