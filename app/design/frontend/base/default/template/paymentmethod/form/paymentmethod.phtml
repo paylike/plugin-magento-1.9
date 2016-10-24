@@ -11,6 +11,7 @@ if (!$name) {
 if (Mage::getStoreConfig('payment/paymentmethod/active')) {
     ?>
     <script type="text/javascript">
+        //<![CDATA[
         var locale = '<?php echo Mage::app()->getLocale()->getLocaleCode();?>';
         var popupTitle = '<?php echo Mage::helper('paymentmethod')->getPopupTitle() ?>';
         var popupDescription = '<?php echo Mage::helper('paymentmethod')->getPopupDescription() ?>';
@@ -53,6 +54,7 @@ if (Mage::getStoreConfig('payment/paymentmethod/active')) {
                 payment.save()
             });
         }
+        //]]>
     </script>
     <input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
 <?php }
