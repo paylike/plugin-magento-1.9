@@ -7,7 +7,7 @@
     <channel>community</channel>
     <extends/>
     <summary>Paylike paymentgateway integration</summary>
-    <description>Paylike paymentgateway is officiall integration, implemented by Ionut Calara. Provides integration for
+    <description>Provides integration for
         payment options powered by Paylike
     </description>
     <notes>First release</notes>
