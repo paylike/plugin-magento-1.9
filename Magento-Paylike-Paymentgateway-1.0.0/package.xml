@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<package>
+    <name>Paylike_Paymentgateway</name>
+    <version>1.0.0</version>
+    <stability>devel</stability>
+    <license>mixed</license>
+    <channel>community</channel>
+    <extends/>
+    <summary>Paylike paymentgateway integration</summary>
+    <description>Paylike paymentgateway is officiall integration, implemented by Ionut Calara. Provides integration for
+        payment options powered by Paylike
+    </description>
+    <notes>First release</notes>
+    <authors>
+        <author>
+            <name>Ionut Calara</name>
+            <user>ionut</user>
+            <email>Ionut@derikon.com</email>
+        </author>
+    </authors>
+    <date>2017-05-26</date>
+    <time>14:27:08</time>
+    <contents>
+        <target name="magecommunity">
+            <dir name="Paylike">
+                <dir name="Paymentgateway">
+                    <dir name="Block">
+                        <dir name="Adminhtml">
+                            <dir name="System">
+                                <dir name="Config">
+                                    <file name="Customfield.php" hash="fbc31b10a5caa30693999ecb0053d0d5"/>
+                                </dir>
+                            </dir>
+                        </dir>
+                        <dir name="Form">
+                            <file name="Paymentgateway.php" hash="beb43908ef90cdde975adf8c4137ee6a"/>
+                        </dir>
+                        <dir name="Info">
+                            <file name="Paymentgateway.php" hash="0a588f4017f3aeafeef202be01794303"/>
+                        </dir>
+                    </dir>
+                    <dir name="Helper">
+                        <file name="Data.php" hash="a2e4b6900e9348566c6ff6d6fd14cb0e"/>
+                    </dir>
+                    <dir name="Model">
+                        <file name="Observer.php" hash="3962a41e83e1b9bbf8f720103a5d0732"/>
+                        <file name="Paylikeadmin.php" hash="0fae8b617824e9953250693e12b23129"/>
+                        <file name="Paylikelogos.php" hash="4bc8b45fd40d9101205594519a5093f1"/>
+                        <file name="Paymentgateway.php" hash="488bab1744e48704294d5045f6fc0b50"/>
+                        <dir name="Resource">
+                            <dir name="Mysql4">
+                                <file name="Setup.php" hash="0a0e06ceaefe6f27709c1b54ae25f786"/>
+                            </dir>
+                            <dir name="Paylikeadmin">
+                                <file name="Collection.php" hash="d026cfa1797c9e37602a815862bb07c4"/>
+                            </dir>
+                            <file name="Paylikeadmin.php" hash="e5678af18ed85ed4916896156b938e1a"/>
+                            <dir name="Paylikelogos">
+                                <file name="Collection.php" hash="eb494e50759840932542495b1c885672"/>
+                            </dir>
+                            <file name="Paylikelogos.php" hash="0bbd8d31f194cc8ba5b2c7ee2e058242"/>
+                            <file name="Setup.php" hash="3064c25f6f00d72fabce6f70fda8c6d8"/>
+                        </dir>
+                        <dir name="Source">
+                            <file name="PaymentAction.php" hash="42804d6b4ad25e2ab25e7ea4350b9124"/>
+                            <file name="PaymentLogos.php" hash="a58369e2b47728f64791374e457db260"/>
+                            <file name="PaymentMode.php" hash="bc1486901b6fba5fac91a08b12f75b7a"/>
+                            <file name="PaymentModuleStatus.php" hash="fb66a67ee2ee0954f2bb844ff3f106ab"/>
+                        </dir>
+                        <dir name="api">
+                            <file name="Adapter.php" hash="34dcdd671676e529cbd97f2a7fafe903"/>
+                            <file name="Card.php" hash="28b7946551d0207fbfc64e327e65d1b1"/>
+                            <file name="Client.php" hash="b83da303f41966a0ba12f7f18912b470"/>
+                            <file name="Transaction.php" hash="589ff779bcf76f6638dcca3ea3ce712c"/>
+                        </dir>
+                    </dir>
+                    <dir name="controllers">
+                        <file name="IndexController.php" hash="67d4563f8c82ee5cf89ea7810c4e0b16"/>
+                        <file name="PaymentController.php" hash="55842e9ae1eef000fe25bc2e4b2315e3"/>
+                    </dir>
+                    <dir name="etc">
+                        <file name="config.xml" hash="4de5c072872d89112194a84083d1e577"/>
+                        <file name="system.xml" hash="bdde1a60c8b6bba4c8371b77196c1317"/>
+                    </dir>
+                    <dir name="sql">
+                        <dir name="paymentgateway_setup">
+                            <file name="mysql4-install-1.0.0.php" hash="67d23f375a4b82a97edb94f6991a3981"/>
+                        </dir>
+                    </dir>
+                </dir>
+            </dir>
+        </target>
+        <target name="mageetc">
+            <dir name="modules">
+                <file name="Paylike_Paymentgateway.xml" hash="a6f596010bdcdb1b9725cb51b68720cf"/>
+            </dir>
+        </target>
+        <target name="magelocale">
+            <dir name="en_US">
+                <file name="Paylike_Paymentgateway.csv" hash="3f710d50f5e5542ab56972eaf4d23ae1"/>
+            </dir>
+        </target>
+        <target name="magedesign">
+            <dir name="frontend">
+                <dir name="base">
+                    <dir name="default">
+                        <dir name="layout">
+                            <file name="paymentgateway.xml" hash="b0b8acde114ec34b0fd48743338d110d"/>
+                        </dir>
+                        <dir name="template">
+                            <dir name="paymentgateway">
+                                <dir name="form">
+                                    <file name="paymentgateway.phtml" hash="96a4fa2d15b999071e9b0a0849a3eee2"/>
+                                </dir>
+                                <dir name="info">
+                                    <file name="paymentgateway.phtml" hash="8c035384918bfbe3be11ad572d06a4bb"/>
+                                </dir>
+                            </dir>
+                        </dir>
+                    </dir>
+                </dir>
+            </dir>
+            <dir name="adminhtml">
+                <dir name="default">
+                    <dir name="default">
+                        <dir name="layout">
+                            <file name="paymentgateway.xml" hash="427211e8adfd46343bc02526e5d1c93c"/>
+                        </dir>
+                        <dir name="template">
+                            <dir name="paymentgateway">
+                                <file name="adminoperations.phtml" hash="c2edb52abfa659810e08de4a47f2bd76"/>
+                            </dir>
+                        </dir>
+                    </dir>
+                </dir>
+            </dir>
+        </target>
+        <target name="mageskin">
+            <dir name="frontend">
+                <dir name="paylike">
+                    <file name="loading.gif" hash="9e0373c2b4410c49439dfd822c5fd16e"/>
+                    <file name="logo.png" hash="abf63409f6beb49411bdb032cb278c52"/>
+                    <dir name="logos">
+                        <file name="mastercard-maestro.svg" hash="0fd89a649641e8a78e78639561cfa636"/>
+                        <file name="mastercard.svg" hash="59733d973a5aec426f5eddfe52d45c85"/>
+                        <file name="visa-electron.svg" hash="d0ec76f9f0c752170afde93ba2519efb"/>
+                        <file name="visa.svg" hash="4ae45851ba69841de359576fee00df6c"/>
+                    </dir>
+                </dir>
+            </dir>
+        </target>
+    </contents>
+    <compatible/>
+    <dependencies>
+        <required>
+            <php>
+                <min>5.2.0</min>
+                <max>7.0.0</max>
+            </php>
+        </required>
+    </dependencies>
+</package>
