@@ -1,0 +1,11 @@
+<config>
+    <modules>
+        <Paylike_Paymentgateway>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Payment/>
+            </depends>
+        </Paylike_Paymentgateway>
+    </modules>
+</config>
