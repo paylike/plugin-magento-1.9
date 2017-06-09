@@ -1,0 +1,321 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <payment>
+            <groups>
+                <paymentgateway translate="label" module="paymentgateway">
+                    <label>Paylike Payment</label>
+                    <sort_order>1000</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <!--<frontend_model>paymentgateway/adminhtml_system_config_customfield</frontend_model>-->
+                    <fields>
+                        <title translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Payment method title</label>
+                            <comment>Payment method title</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <validate>required-entry</validate>
+                        </title>
+
+                        <payment_logo translate="label">
+                            <label>Payment method credit card logos</label>
+                            <comment>
+                                Choose a logo to show in frontend checkout page.
+                                <![CDATA[
+                                    <strong>
+                                        <a href="javascript:void(0);" id="add_logo" title="Add your own logo" style="
+                                            color: #fff;
+                                            font-size: 18px;
+                                            border-radius: 14px;
+                                            background-color: #00aff0;
+                                            padding: 0 5px 0 4px;
+                                            text-align: center;
+                                            text-decoration: none;
+                                            display: inline-block;
+                                            position: relative;
+                                            top: 3px;
+                                        ">+</a>
+                                    </strong>
+
+                                    <div id="logo_upload_popup" style="
+                                        display:none;
+                                        height: auto;
+                                        width: auto;
+                                        z-index: 1000;
+                                        background-color: #fff;
+                                        box-shadow: 0px 5px 10px #888888;
+                                        position: absolute;
+                                    ">
+                                        <div id="logo_upload_popup_header" style="
+                                            background-color: #6f8992;
+                                            color: #fff;
+                                            font-size: 1em;
+                                            line-height: 18px;
+                                            min-height: 0;
+                                            font-weight: bold;
+                                        ">
+                                            <span style="font-weight: 600; padding-left: 10px;">New logo</span>
+                                            <span style="float: right; padding-right: 5px;">
+                                                <a href="javascript:void(0);" class="close" style="color: #fff; text-decoration: none;">X</a>
+                                            </span>
+                                        </div>
+                                        <div id="logo_upload_popup_body" style="
+                                            padding: 20px;
+                                        ">
+                                            <div id="logo_upload_popup_message" style="margin-bottom: 10px; display: none;"></div>
+                                            <div style="margin-bottom: 10px;">
+                                                <label style="font-weight: 600; width:70px; display:inline-block">Logo name</label>
+                                                <input type="text" name="logo_name" style="width:75%"/>
+                                            </div>
+                                            <div>
+                                                <label style="font-weight: 600; width:70px; display:inline-block">Logo</label>
+                                                <input type="file" name="logo_file" />
+                                            </div>
+                                        </div>
+                                        <div id="logo_upload_popup_footer" style="
+                                            padding: 5px;
+                                            border-top: 1px solid #000;
+                                            height: 20px;
+                                        ">
+                                            <div style="float: right;">
+                                                <button type="button" id="save_logo">Save</button>
+                                                <button type="button" class="close">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <script type="text/javascript" src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+                                    <script type="text/javascript">
+                                        $.noConflict();
+                                        jQuery( document ).ready(function( $ ) {
+                                            jQuery('#add_logo').on('click', addLogoClickHandler);
+                                            jQuery('.close').on('click', closeBtnClickHandler);
+                                            jQuery('#save_logo').on('click', ajaxSaveLogo);
+                                        });
+                                        function addLogoClickHandler() {
+                                            jQuery('#logo_upload_popup').show();
+                                        }
+                                        function closeBtnClickHandler() {
+                                            jQuery("#logo_upload_popup").hide();
+                                        }
+                                        function ajaxSaveLogo(e) {
+                                            jQuery(e.currentTarget).attr('disabled', 'disabled').text('Please wait ...');
+                                            jQuery("#logo_upload_popup_message").html('').hide();
+                                            var logo_name = jQuery('input[name="logo_name"]').val();
+                                            var logo_file = jQuery('input[name="logo_file"]');
+                                            logo_file = (logo_file[0].files.length > 0) ? logo_file[0].files[0] : null;
+                                            var formData = new FormData();
+                                            formData.append('logo_name', logo_name);
+                                            formData.append('logo_file', logo_file);
+                                            jQuery.ajax({
+                                                url: '../../../../../../../paymentgateway/index/uploadLogo',
+                                                type: 'POST',
+                                                data: formData,
+                                                contentType: false,
+                                                cache: false,
+                                                processData:false,
+                                                enctype: 'multipart/form-data',
+                                                success: function(response) {
+                                                    //console.log(response);
+                                                    jQuery(e.currentTarget).removeAttr('disabled').text('Save');
+                                                    var style = 'color:green';
+                                                    if(response.status == 0) {
+                                                        style = 'color:red';
+                                                    }
+                                                    var html = '<span style="' + style + '">' + response.message + '</span>';
+                                                    jQuery("#logo_upload_popup_message").html(html).show();
+
+                                                    if(response.status == 1) {
+                                                        window.location = window.location;
+                                                    }
+                                                },
+                                                error: function(response) {
+                                                    //console.log(response);
+                                                }
+                                            });
+                                        }
+                                    </script>
+                                ]]>
+                            </comment>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>paymentgateway/source_paymentLogos</source_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </payment_logo>
+
+                        <description translate="label">
+                            <label>Payment method description</label>
+                            <comment>Payment method description</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </description>
+
+                        <pop_up_title translate="label">
+                            <label>Payment popup title</label>
+                            <comment>The text shown in the popup where the customer inserts the card details
+                                <![CDATA[
+                                    <script type="text/javascript">
+                                        jQuery( document ).ready(function( $ ) {
+                                            jQuery.ajax({
+                                                url: '../../../../../../../paymentgateway/index/getSiteName',
+                                                type: 'POST',
+                                                success: function(response) {
+                                                    $('#payment_paymentgateway_pop_up_title').val(response);
+                                                }
+                                            });
+                                        });
+                                    </script>
+                                ]]>
+                            </comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </pop_up_title>
+
+                        <show_pop_up_description translate="label">
+                            <label>Show payment popup description</label>
+                            <comment>If this is set to no the product list will be shown</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </show_pop_up_description>
+
+                        <pop_up_description translate="label">
+                            <label>Payment popup description</label>
+                            <comment>Text description that shows up on the payment popup.</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </pop_up_description>
+
+                        <payment_mode translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Transaction mode</label>
+                            <comment>In test mode, you can create a successful transaction with the card number 4100 0000 0000 0000 with any CVC and a valid expiration date.</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>paymentgateway/source_paymentMode</source_model>
+                            <sort_order>7</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </payment_mode>
+
+                        <test_public_key translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Test mode Public Key</label>
+                            <comment>Get it from your Paylike dashboard</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>8</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <depends>
+                                <payment_mode>test</payment_mode>
+                            </depends>
+                            <validate>required-entry</validate>
+                        </test_public_key>
+
+                        <test_api_key translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Test mode App Key</label>
+                            <comment>Get it from your Paylike dashboard</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>9</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <depends>
+                                <payment_mode>test</payment_mode>
+                            </depends>
+                            <validate>required-entry</validate>
+                        </test_api_key>
+
+                        <live_public_key translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Live mode Public Key</label>
+                            <comment>Get it from your Paylike dashboard</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <depends>
+                                <payment_mode>live</payment_mode>
+                            </depends>
+                            <validate>required-entry</validate>
+                        </live_public_key>
+
+                        <live_api_key translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Live mode App Key</label>
+                            <comment>Get it from your Paylike dashboard</comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>11</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <depends>
+                                <payment_mode>live</payment_mode>
+                            </depends>
+                            <validate>required-entry</validate>
+                        </live_api_key>
+
+                        <payment_action translate="label">
+                            <label><![CDATA[<strong><span style="color: red;">* </span></strong>]]> Capture mode</label>
+                            <comment>If you deliver your product instantly (e.g. a digital product), choose Instant mode. If not, use Delayed</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>paymentgateway/source_paymentAction</source_model>
+                            <sort_order>12</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </payment_action>
+
+                        <order_status translate="label">
+                            <label>Capture on order status (delayed mode)</label>
+                            <comment>The transaction will be captured once the order has the chosen status</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_order_status</source_model>
+                            <sort_order>13</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </order_status>
+
+                        <status translate="label">
+                            <label>Status</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>paymentgateway/source_paymentModuleStatus</source_model>
+                            <sort_order>14</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </status>
+
+                        <sort_order translate="label">
+                            <label>Sort Order</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>15</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </sort_order>
+
+                    </fields>
+                </paymentgateway>
+            </groups>
+        </payment>
+    </sections>
+</config>
