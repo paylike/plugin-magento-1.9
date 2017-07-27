@@ -14,6 +14,7 @@ You can also find information about the plugin here: https://paylike.io/plugins/
 ## Installation
 
 1. Log in as administrator and upload the tgz file using the magento connect manager
+    * If you have installed the plugin before, you may encounter issues as it has been renamed. If this happens please contact [support](https://paylike.io/contact) and we will assist on fixing the issues.
 2. After the plugin is installed go to the configuration screen : System-> Configuration (top menu)  -> Sales -> Payment Methods (sidebar menu) -> Paylike payment
 3. In this settings screen you need to  add the Public and App key that you can find in your Paylike account.
 
