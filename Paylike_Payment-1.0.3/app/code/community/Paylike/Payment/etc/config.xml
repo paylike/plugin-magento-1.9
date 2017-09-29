@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+
+<config>
+    <modules>
+        <Paylike_Payment>
+            <version>1.0.0</version>
+        </Paylike_Payment>
+    </modules>
+
+    <global>
+        <fieldsets>
+            <sales_convert_quote_payment>
+                <paylike_transaction_id>
+                    <to_order_payment>*</to_order_payment>
+                </paylike_transaction_id>
+            </sales_convert_quote_payment>
+
+            <sales_convert_order_payment>
+                <paylike_transaction_id>
+                    <to_quote_payment>*</to_quote_payment>
+                </paylike_transaction_id>
+            </sales_convert_order_payment>
+        </fieldsets>
+
+        <helpers>
+            <paylike_payment>
+                <class>Paylike_Payment_Helper</class>
+            </paylike_payment>
+        </helpers>
+
+        <blocks>
+            <paylike_payment>
+                <class>Paylike_Payment_Block</class>
+            </paylike_payment>
+        </blocks>
+
+        <models>
+            <paylike_payment>
+                <class>Paylike_Payment_Model</class>
+                <resourceModel>paylike_resource</resourceModel>
+            </paylike_payment>
+            <paylike_resource>
+                <class>Paylike_Payment_Model_Resource</class>
+                <entities>
+                    <paylikeadmin>
+                        <table>paylike_admin</table>
+                    </paylikeadmin>
+                    <paylikelogos>
+                        <table>paylike_logos</table>
+                    </paylikelogos>
+                </entities>
+            </paylike_resource>
+			 <payment>
+                <rewrite>
+                    <info>Paylike_Payment_Model_Info</info>
+                </rewrite>
+            </payment>
+        </models>
+
+        <resources>
+            <paylike_setup>
+                <setup>
+                    <module>Paylike_Payment</module>
+                    <class>Paylike_Payment_Model_Resource_Mysql4_Setup</class>
+                </setup>
+            </paylike_setup>
+            <connection>
+                <use>core_setup</use>
+            </connection>
+        </resources>
+    </global>
+
+    <default>
+        <payment>
+            <paylike>
+                <active>1</active>
+                <model>paylike_payment/paylike</model>
+                <title>Credit card</title>
+                <payment_logo>visa.svg</payment_logo>
+                <description>Secure payment with credit card via © Paylike</description>
+                <pop_up_title></pop_up_title>
+                <show_pop_up_description>0</show_pop_up_description>
+                <pop_up_description></pop_up_description>
+                <payment_mode>test</payment_mode>
+                <payment_action>authorize</payment_action>
+                <order_status>processing</order_status>
+                <status>1</status>
+            </paylike>
+        </payment>
+    </default>
+
+    <frontend>
+        <routers>
+            <paylike_payment>
+                <use>standard</use>
+                <args>
+                    <module>Paylike_Payment</module>
+                    <frontName>paylike</frontName>
+                </args>
+            </paylike_payment>
+        </routers>
+
+        <layout>
+            <updates>
+                <paylike_payment>
+                    <file>paylike.xml</file>
+                </paylike_payment>
+            </updates>
+        </layout>
+
+        <translate>
+            <modules>
+                <paylike_payment>
+                    <files>
+                        <default>paylike_Payment.csv</default>
+                    </files>
+                </paylike_payment>
+            </modules>
+        </translate>
+    </frontend>
+
+    <adminhtml>
+        <layout>
+            <updates>
+                <paylike_payment>
+                    <file>paylike.xml</file>
+                </paylike_payment>
+            </updates>                
+        </layout>
+
+        <events>
+            <core_block_abstract_to_html_after>
+                <observers>
+                    <paylike_custom_order_view_info>
+                        <class>Paylike_Payment_Model_Observer</class>
+                        <method>getSalesOrderViewInfo</method>
+                    </paylike_custom_order_view_info>
+                </observers>
+            </core_block_abstract_to_html_after>
+        </events>
+
+        <translate>
+            <modules>
+                <paylike_payment>
+                    <files>
+                        <default>Paylike_Payment.csv</default>
+                    </files>
+                </paylike_payment>
+            </modules>
+        </translate>
+    </adminhtml>
+
+</config>
