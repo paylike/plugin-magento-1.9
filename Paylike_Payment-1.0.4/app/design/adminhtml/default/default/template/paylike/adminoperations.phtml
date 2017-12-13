@@ -1,0 +1,184 @@
+<?php
+    $order = $this->getOrder();
+
+    $order_id = $order->getId();
+    $real_order_id = $order->getRealOrderId();
+
+    //Get Payment
+    $payment = $order->getPayment();
+
+    $paylike_admin = Mage::getModel('paylike_payment/paylikeadmin')
+        ->getCollection()
+        ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
+        ->addFieldToFilter('order_id', $order_id)
+        ->getFirstItem()
+        ->getData();
+
+    //Get card type
+    $payment->getData('cc_type');
+
+    //Get Payment Info
+    $payment->getMethodInstance()->getCode();
+    $payment->getMethodInstance()->getTitle();
+?>
+<?php if($payment->getMethodInstance()->getCode() == 'paylike') { ?>
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript">jQuery.noConflict();</script>
+    <script type="text/javascript">
+        jQuery(function() {
+            jQuery(document).ready(function() {
+                var appendEl;
+                appendEl = jQuery('select[name=id_order_state]').parents('form').after(jQuery('<div/>'));
+                jQuery("#paylike").appendTo(appendEl);
+
+                jQuery('#paylike_action').bind('change', paylikeActionChangeHandler);
+                jQuery('#submit_paylike_action').bind('click', submitPaylikeActionClickHandler);
+            });
+
+            function paylikeActionChangeHandler(e) {
+                var option_value = jQuery('#paylike_action option:selected').val();
+                if(option_value == 'refund') {
+                    jQuery('input[name="paylike_amount_to_refund"]').show();
+                } else {
+                    jQuery('input[name="paylike_amount_to_refund"]').hide();
+                }
+            }
+
+            function submitPaylikeActionClickHandler(e) {
+                e.preventDefault();
+                jQuery('#alert').hide();
+                var paylike_action = jQuery('#paylike_action').val();
+                var errorFlag = false;
+
+                if(paylike_action == '') {
+                    var html = '<strong>Warning!</strong> Please select an action.';
+                    errorFlag = true;
+
+                } else if(paylike_action == 'refund') {
+                    var refund_amount = jQuery('input[name="paylike_amount_to_refund"]').val();
+                    var html = '';
+
+                    if(refund_amount == '') {
+                        var html = '<strong>Warning!</strong> Please provide the refund amount.';
+                        errorFlag = true;
+
+                    }
+                }
+
+                if(errorFlag) {
+                    jQuery('#alert ul li:first span').html(html);
+                    jQuery('#alert ul li:first').removeClass('success-msg')
+                        .removeClass('warning-msg')
+                        .removeClass('error-msg')
+                        .addClass('warning-msg');
+                    jQuery('#alert').show();
+                    return false;
+                }
+
+                //Make an AJAX call for Paylike action
+                jQuery(e.currentTarget).attr('disabled', 'disabled');
+                jQuery('#paylike_loader').show();
+                var url = jQuery('#paylike_form').attr('action');
+                jQuery.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: jQuery('#paylike_form').serializeArray(),
+                    dataType: 'JSON',
+                    success: function(response) {
+                        jQuery(e.currentTarget).removeAttr('disabled');
+                        jQuery('#paylike_loader').hide();
+                        console.log(response);
+
+                        if(response.hasOwnProperty('success') && response.hasOwnProperty('message')) {
+                            var message = response.message;
+                            var html = '<strong>Success!</strong> ' + message;
+                            jQuery('#alert ul li:first span').html(html);
+                            jQuery('#alert ul li:first').removeClass('success-msg')
+                                 .removeClass('warning-msg')
+                                 .removeClass('error-msg')
+                                 .addClass('success-msg');
+                            jQuery('#alert').show();
+
+                        } else if(response.hasOwnProperty('error') && response.hasOwnProperty('message')) {
+                            var message = response.message;
+                            var html = '<strong>Error!</strong> ' + message;
+                            jQuery('#alert ul li span').html(html);
+                            jQuery('#alert ul li').removeClass('success-msg')
+                                .removeClass('warning-msg')
+                                .removeClass('error-msg')
+                                .addClass('error-msg');
+                            jQuery('#alert').show();
+                        }
+                    },
+                    error: function(response) {
+                        console.log(response);
+                    }
+                });
+
+            }
+        });
+    </script>
+    <div class="entry-edit">
+        <div class="entry-edit-head">
+            <h4 class="icon-head"><?php echo $this->__('Process Paylike Payment') ?></h4>
+        </div>
+        <form id="paylike_form" action="<?php echo Mage::getUrl('paylike/index/payment'); ?>" method="post">
+            <input type="hidden" name="order_id" value="<?php echo $order_id; ?>" />
+            <fieldset>
+                <div id="alert" style="display: none;">
+                    <ul class="messages">
+                        <li class="success-msg">
+                            <span></span>
+                        </li>
+                    </ul>
+                </div>
+                <table width="" cellspacing="0">
+                    <tbody>
+                        <tr>
+                            <td class="label">
+                                <label><?php echo $this->__("Paylike Action"); ?></label>
+                            </td>
+                            <td class="input-ele">
+                                <select class="input-select" id="paylike_action" name="paylike_action">
+                                    <option value="">-- Select Paylike Action --</option>
+                                    <?php if($paylike_admin['captured'] == 'NO') { ?>
+                                        <option value="capture">Capture</option>
+                                    <?php } ?>
+                                    <option value="refund">Refund</option>
+                                    <?php if($paylike_admin['captured'] == 'NO') { ?>
+                                        <option value="void">Void</option>
+                                    <?php } ?>
+                                </select>
+                            </td>
+                            <td>&nbsp;</td>
+                            <td class="input-ele">
+                                <input class="input-text" name="paylike_amount_to_refund" style="width: 280px; display: none;" placeholder="Refund amount" type="text"/>
+                            </td>
+                            <td>&nbsp;</td>
+                           
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td class="input-ele">
+                                <button name="submit_paylike_action" id="submit_paylike_action" type="submit" class="btn btn-primary" >
+                                    <span>
+                                       <?php echo $this->__("Process Action"); ?>
+                                    </span>
+                                </button>
+                            </td>
+                            <td class="input-ele">
+                                <span class="" id="paylike_loader" style="display: none;">
+                                    <img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN); ?>frontend/rwd/default/images/opc-ajax-loader.gif" alt="Please wait..." title="Please wait..." class="v-middle" style="width: 20px; padding-left: 10px;" />
+                                    Please wait...
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </fieldset>
+        </form>
+    </div>
+    <div class="clear"></div>
+<?php } ?>
