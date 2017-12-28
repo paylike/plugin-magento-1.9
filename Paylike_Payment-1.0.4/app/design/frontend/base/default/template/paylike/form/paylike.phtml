@@ -172,29 +172,26 @@ if (Mage::getStoreConfig('payment/paylike/status')) {
                         }
                     };
                     if (typeof window.oscPlaceOrder === 'function') {
-                        args.custom.push({
-                            ecommerce: {
-                                name: 'OneStepCheckout',
-                                version: oscVersion
-                            },
-                        })
+                        args.custom.ecommerce = {
+                            name: 'OneStepCheckout',
+                            version: oscVersion
+                        };
                     }
 
-                    paylike.popup(args,
-                        , function (err, res) {
-                            if (err) {
-                                if (err == 'closed') {
-                                    //document.getElementById('p_method_paymentgateway').checked = false;
-                                }
-                                return console.log(err);
+                    paylike.popup(args, function (err, res) {
+                        if (err) {
+                            if (err == 'closed') {
+                                //document.getElementById('p_method_paymentgateway').checked = false;
                             }
-                            document.getElementById("transaction-id").value = res.transaction.id.toString();
+                            return console.log(err);
+                        }
+                        document.getElementById("transaction-id").value = res.transaction.id.toString();
 
-                            if (checkoutExt == 1)
-                                review.oldSave();
-                            if (checkoutExt == 2)
-                                window.paylikeoscOldPlaceOrder(element);
-                        });
+                        if (checkoutExt == 1)
+                            review.oldSave();
+                        if (checkoutExt == 2)
+                            window.paylikeoscOldPlaceOrder(element);
+                    });
                 } else {
                     var message = '';
                     if (payment_mode == 'test') {
