@@ -2,7 +2,8 @@
 
 require_once dirname(__FILE__) . '/../Model/api/Client.php';
 
-class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
+class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract
+{
 
     const REQUEST_TYPE_AUTH_CAPTURE = 'AUTH_CAPTURE';
     const REQUEST_TYPE_AUTH_ONLY = 'AUTH_ONLY';
@@ -77,7 +78,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
         } else {
             if (!empty($fetch['transaction'])) {
                 $transaction = $fetch['transaction'];
-                if ($transaction['amount'] != Mage::helper('paylike_payment/currencies')->Ceil($order->getGrandTotal(),$order->getOrderCurrencyCode()) || Mage::app()->getStore()->getCurrentCurrencyCode() != $transaction['currency'] || $transaction['custom']['quoteId'] != $quoteId) {
+                if ($transaction['amount'] != Mage::helper('paylike_payment/currencies')->Ceil($order->getGrandTotal(), $order->getOrderCurrencyCode()) || Mage::app()->getStore()->getCurrentCurrencyCode() != $transaction['currency'] || $transaction['custom']['quoteId'] != $quoteId) {
                     if ($ajax) {
                         $response = array(
                             'error' => 1,
@@ -182,11 +183,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
         $order_id = $order->getId();
         $real_order_id = $order->getRealOrderId();
         $paylike_admin = Mage::getModel('paylike_payment/paylikeadmin')
-                ->getCollection()
-                ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
-                ->addFieldToFilter('order_id', $order_id)
-                ->getFirstItem()
-                ->getData();
+            ->getCollection()
+            ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
+            ->addFieldToFilter('order_id', $order_id)
+            ->getFirstItem()
+            ->getData();
 
         if (!empty($paylike_admin) && $paylike_admin['captured'] == 'NO') {
             $apiKey = $this->getApiKey();
@@ -205,7 +206,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
             Paylike\Client::setKey($this->getApiKey());
             $arr = array(
                 'currency' => Mage::app()->getStore()->getCurrentCurrencyCode(),
-                'descriptor' => "Order #" . $real_order_id,
+                'descriptor' => $this->getDescriptor("#" . $real_order_id),
                 'amount' => Mage::helper('paylike_payment/currencies')->Ceil($amount, Mage::app()->getStore()->getCurrentCurrencyCode()),
             );
             $capture = Paylike\Transaction::capture($payment->getLastTransId(), $arr);
@@ -304,7 +305,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
                 );
                 return $response;
             } else {
-                $errormsg = Mage::helper('paylike_payment')->__('The transaction is not valid.'.$payment->getPaylikeTransactionId());
+                $errormsg = Mage::helper('paylike_payment')->__('The transaction is not valid.' . $payment->getPaylikeTransactionId());
                 Mage::throwException($errormsg);
             }
         }
@@ -315,11 +316,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
     {
         $order_id = $payment->getOrder()->getId();
         $paylike_admin = Mage::getModel('paylike_payment/paylikeadmin')
-                ->getCollection()
-                ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
-                ->addFieldToFilter('order_id', $order_id)
-                ->getFirstItem()
-                ->getData();
+            ->getCollection()
+            ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
+            ->addFieldToFilter('order_id', $order_id)
+            ->getFirstItem()
+            ->getData();
 
         if (!empty($paylike_admin) && $paylike_admin['captured'] == 'YES') {
             $apiKey = $this->getApiKey();
@@ -348,8 +349,10 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
                 }
             }
             Paylike\Client::setKey($this->getApiKey());
+            $order = $payment->getOrder();
+            $real_order_id = $order->getRealOrderId();
             $arr = array(
-                'descriptor' => '',
+                'descriptor' => $this->getDescriptor('#' . $real_order_id),
                 'amount' => Mage::helper('paylike_payment/currencies')->Ceil($amount, $payment->getOrder()->getOrderCurrencyCode())
             );
             $refund = Paylike\Transaction::refund($payment->getLastTransId(), $arr);
@@ -458,11 +461,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
     {
         $order_id = $payment->getOrder()->getId();
         $paylike_admin = Mage::getModel('paylike_payment/paylikeadmin')
-                ->getCollection()
-                ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
-                ->addFieldToFilter('order_id', $order_id)
-                ->getFirstItem()
-                ->getData();
+            ->getCollection()
+            ->addFieldToFilter('paylike_tid', $payment->getPaylikeTransactionId())
+            ->addFieldToFilter('order_id', $order_id)
+            ->getFirstItem()
+            ->getData();
 
         if (!empty($paylike_admin) && $paylike_admin['captured'] == 'NO') {
             $amount = $payment->getAmountAuthorized();
@@ -558,7 +561,8 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
         }
     }
 
-    public function isAvailable($quote = null) {
+    public function isAvailable($quote = null)
+    {
         return Mage::getStoreConfig('payment/paylike/status');
     }
 
@@ -582,7 +586,8 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
         return $this;
     }
 
-    protected function getApiKey() {
+    protected function getApiKey()
+    {
         if (Mage::getStoreConfig('payment/paylike/payment_mode') == 'test') {
             return Mage::getStoreConfig('payment/paylike/test_api_key');
         } else {
@@ -610,6 +615,33 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
         return $this->_code;
     }
 
+    /**
+     * Get account user descriptor and append text to it if needed
+     * @param $text_to_append
+     * @return bool|null|string|string[]
+     */
+    protected function getDescriptor($text_to_append)
+    {
+        Paylike\Client::setKey($this->getApiKey());
+        $adapter = Paylike\Client::getAdapter();
+        $data = $adapter->request('me', null, 'get');
+        $descriptor = '';
+        if (!isset($data['identity'])) {
+            return $descriptor;
+        } else {
+            $data = $adapter->request('identities/' . $data['identity']['id'] . '/merchants?limit=10', $data, 'get');
+            if ($data) {
+                $merchant = $data[0];
+                $descriptor = $merchant['descriptor'];
+            }
+        }
+        if (strlen($descriptor) + strlen($text_to_append) <= 22) {
+            $descriptor = $descriptor . $text_to_append;
+        }
+        //remove non ascii chars
+        $descriptor = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $descriptor);
+        return substr($descriptor, 0, 22);
+    }
 
 
 }
