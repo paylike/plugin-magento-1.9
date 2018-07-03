@@ -643,13 +643,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract
             $merchants = $adapter->request('identities/' . $data['identity']['id'] . '/merchants?limit=10', $data, 'get');
         }
         foreach ($merchants as $merchant) {
-            if ($this->getPaymentMode() == 'test' && $merchant['test'] && $merchant['key'] == $this->getPublicKey()) {
-                return $merchant['descriptor'];
-            }
-            if (!$merchant['test'] && $this->getPaymentMode() != 'test' && $merchant['key'] == $this->getPublicKey()) {
+            if ($merchant['key'] === $this->getPublicKey()) {
                 return $merchant['descriptor'];
             }
         }
+        return false;
     }
 
     /**
