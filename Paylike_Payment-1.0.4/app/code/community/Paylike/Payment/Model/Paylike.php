@@ -667,7 +667,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract
             $descriptor = $descriptor . $text_to_append;
         }
         //remove non ascii chars
-        $descriptor = preg_replace('/^[\x20-\x7E]{0,22}$/', '', $descriptor);
+        $descriptor = preg_replace('/^[\x20-\x7E]$/', '', $descriptor);
         return substr($descriptor, 0, 22);
     }
 
