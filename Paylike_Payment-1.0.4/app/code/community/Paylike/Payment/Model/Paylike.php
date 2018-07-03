@@ -588,11 +588,25 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract
 
     protected function getApiKey()
     {
-        if (Mage::getStoreConfig('payment/paylike/payment_mode') == 'test') {
+        if ($this->getPaymentMode() == 'test') {
             return Mage::getStoreConfig('payment/paylike/test_api_key');
         } else {
             return Mage::getStoreConfig('payment/paylike/live_api_key');
         }
+    }
+
+    protected function getPublicKey()
+    {
+        if ($this->getPaymentMode() == 'test') {
+            return Mage::getStoreConfig('payment/paylike/test_public_key');
+        } else {
+            return Mage::getStoreConfig('payment/paylike/live_public_key');
+        }
+    }
+
+    protected function getPaymentMode()
+    {
+        return Mage::getStoreConfig('payment/paylike/payment_mode');
     }
 
     /* protected  function getPopupTitle()
@@ -616,30 +630,44 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract
     }
 
     /**
+     * Get the key of the global merchant descriptor
+     */
+    protected function getGlobalMerchantDescriptor()
+    {
+        Paylike\Client::setKey($this->getApiKey());
+        $adapter = Paylike\Client::getAdapter();
+        $data = $adapter->request('me', null, 'get');
+        if (!isset($data['identity'])) {
+            return null;
+        } else {
+            $merchants = $adapter->request('identities/' . $data['identity']['id'] . '/merchants?limit=10', $data, 'get');
+        }
+        foreach ($merchants as $merchant) {
+            if ($this->getPaymentMode() == 'test' && $merchant['test'] && $merchant['key'] == $this->getPublicKey()) {
+                return $merchant['descriptor'];
+            }
+            if (!$merchant['test'] && $this->getPaymentMode() != 'test' && $merchant['key'] == $this->getPublicKey()) {
+                return $merchant['descriptor'];
+            }
+        }
+    }
+
+    /**
      * Get account user descriptor and append text to it if needed
      * @param $text_to_append
      * @return bool|null|string|string[]
      */
     protected function getDescriptor($text_to_append)
     {
-        Paylike\Client::setKey($this->getApiKey());
-        $adapter = Paylike\Client::getAdapter();
-        $data = $adapter->request('me', null, 'get');
-        $descriptor = '';
-        if (!isset($data['identity'])) {
-            return $descriptor;
-        } else {
-            $data = $adapter->request('identities/' . $data['identity']['id'] . '/merchants?limit=10', $data, 'get');
-            if ($data) {
-                $merchant = $data[0];
-                $descriptor = $merchant['descriptor'];
-            }
+        $descriptor = $this->getGlobalMerchantDescriptor();
+        if (!$descriptor) {
+            return '';
         }
         if (strlen($descriptor) + strlen($text_to_append) <= 22) {
             $descriptor = $descriptor . $text_to_append;
         }
         //remove non ascii chars
-        $descriptor = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $descriptor);
+        $descriptor = preg_replace('/^[\x20-\x7E]{0,22}$/', '', $descriptor);
         return substr($descriptor, 0, 22);
     }
 
