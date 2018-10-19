@@ -9,7 +9,8 @@ You can also find information about the plugin here: https://paylike.io/plugins/
 
 ## Supported Magento versions
 
-- 1.9
+* The plugin has been tested with most versions of Magento at every iteration. We recommend using the latest version of Magento, but if that is not possible for some reason, test the plugin with your Magento version and it would probably function properly. 
+* Magento version last tested on: *1.9.2.3*
 
 ## Installation
 
