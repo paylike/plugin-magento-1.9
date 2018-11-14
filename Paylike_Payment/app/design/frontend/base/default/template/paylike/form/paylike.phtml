@@ -1,0 +1,216 @@
+<?php
+$quote = Mage::getSingleton('checkout/cart')->getQuote();
+$paylike_helper = Mage::helper('paylike_payment');
+$grand_total = $this->helper('checkout/cart')->getQuote()->getGrandTotal();
+$currency_code = Mage::app()->getStore()->getCurrentCurrencyCode();
+$email = $quote->getBillingAddress()->getEmail();
+$name = $quote->getBillingAddress()->getName();
+if (!$email) {
+    $email = $quote->getCustomerEmail();
+}
+if (!$name) {
+    $name = $quote->getCustomerName();
+}
+if (Mage::getStoreConfig('payment/paylike/status')) {
+    ?>
+	<style type="text/css">
+		.paylike-logo {
+			width: 40px;
+			padding-right: 10px;
+		}
+
+		label[for="p_method_paylike"] span {
+			float: left;
+			margin-right: 10px;
+			margin-top: 6px;
+		}
+
+		label[for="p_method_paylike"] p {
+			clear: both;
+		}
+
+		label[for="p_method_paylike"] span ~ img {
+			margin-top: 5px;
+		}
+	</style>
+	<script type="text/javascript">
+        document.getElementById('p_method_paylike').checked = false;
+        var paylikeVAR = {
+            tax: '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount'); ?>',
+            telephone: '<?php echo $paylike_helper->getTelephone(); ?>',
+            address: '<?php echo $paylike_helper->getAddress(); ?>',
+            email: '<?php echo $email; ?>',
+            name: '<?php echo $name; ?>',
+            amountpaylike:<?php echo Mage::helper('paylike_payment/currencies')->Ceil($grand_total, $currency_code) ?>};
+        var payment_method_desc = '<?php echo $paylike_helper->getPaymentMethodDescription(); ?>';
+        var payment_method_caredit_card_logos = '<?php echo $paylike_helper->getCreditCardLogos(true); ?>';
+        var payment_method_title = jQuery('#p_method_paylike').parents('dt').find('label[for="p_method_paylike"]').text().replace(/^\s+|\s+$/g, '');
+        var selectedShipmentMethod = '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getShippingMethod(); ?>';
+        var html = '<img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN); ?>frontend/paylike/logo.png" alt="Paylike" title="Paylike" class="v-middle paylike-logo" />';
+        html += '<span>' + payment_method_title + '</span>';
+        payment_method_caredit_card_logos = jQuery.parseJSON(payment_method_caredit_card_logos);
+        jQuery.each(payment_method_caredit_card_logos, function (index, item) {
+            html += '<img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN); ?>frontend/paylike/logos/' + item + '" alt="' + item + '" title="' + item + '" class="v-middle paylike-logo" style="height:26px;" />';
+        });
+        html += '<p>' + payment_method_desc + '</p>';
+        var paylikeRadioButton = jQuery('#p_method_paylike').parents('dt').find('label[for="p_method_paylike"]');
+        var paylikeRadioButtonText = paylikeRadioButton.html().replace(/Paylike/g, '');
+        var re = new RegExp(payment_method_title, "g");
+        paylikeRadioButtonText = paylikeRadioButtonText.replace(re, '');
+        paylikeRadioButton.html(paylikeRadioButtonText + html);
+
+        jQuery("input:radio").change(function () {
+            if (!jQuery("#p_method_paylike").is(":checked")) {
+                if (jQuery('#errorMessage').length > 0) {
+                    jQuery('#errorMessage').remove();
+                }
+            }
+        });
+
+        function clearError() {
+            if (jQuery('#errorMessage-paylike').length > 0) {
+                jQuery('#errorMessage-paylike').remove();
+            }
+        }
+
+        function showError(message) {
+            clearError();
+            if (message != '') {
+                var html = '<div id="errorMessage-paylike" style="color: #ff0000; font-size: 13px; font-weight: normal;">' + message + '</div>';
+                jQuery('#p_method_paylike').parents('dt').append(html);
+            }
+        }
+
+
+        var payment_mode = '<?php echo $paylike_helper->getPaymentMode(); ?>';
+        var locale = '<?php echo Mage::app()->getLocale()->getLocaleCode(); ?>';
+        var popupTitle = '<?php echo $paylike_helper->getPopupTitle(); ?>';
+        var currency = '<?php echo $currency_code; ?>';
+        var publicKey = '<?php echo $paylike_helper->getPublicKey(); ?>';
+        var notReadyMessage = '<?php echo Mage::helper('paylike_payment')->getAlertOnNotReady(); ?>';
+        var amount = '<?php echo $grand_total; ?>';
+        var quoteId = '<?php echo $this->helper('checkout/cart')->getQuote()->getId(); ?>';
+        var products = '<?php echo $paylike_helper->getProducts(true); ?>';
+
+        var customerIp = '<?php echo Mage::helper('core/http')->getRemoteAddr(); ?>';
+        var platform_version = '<?php echo Mage::getVersion(); ?>';
+        var version = '<?php echo Mage::getConfig()->getNode('modules/Paylike_Payment/version'); ?>';
+        var oscVersion = '<?php echo Mage::getConfig()->getNode('modules/Magestore_Onestepcheckout/version'); ?>';
+
+        <?php Mage::log(Mage::helper('paylike_payment/currencies')->Ceil($grand_total, $currency_code), false, 'paylike.log'); ?>
+        // automated testing purposes
+        window.paylikeminoramount = paylikeVAR.amountpaylike;
+        window.paylikeSelectedMethodOfShipping = selectedShipmentMethod;
+        //document.querySelector('#p_method_paymentgateway').addEventListener('click', pay);
+        document.querySelector('#p_method_paylike').addEventListener('click', paylikePaymentSelectHandler);
+
+
+        function paylikePaymentSelectHandler() {
+            //document.getElementById("transaction-id").value = "5910238566b6776329301fb9";
+            document.getElementById("transaction-id").removeAttribute("disabled");
+            document.getElementById("transaction-id").value = String(Math.floor((Math.random() * 1000000000000) + 1));
+        }
+
+        var paylikeoscOldPlaceOrder;
+        jQuery(document).ready(function ($) {
+            if (typeof window.oscPlaceOrder === 'function') {
+                paylikeoscOldPlaceOrder = window.oscPlaceOrder;
+                window.oscPlaceOrder = function (element) {
+                    var validator = new Validation('one-step-checkout-form');
+                    if (validator.validate()) {
+                        if (jQuery('.ajax-loader1:visible').length > 0 || jQuery('.ajax-loader2:visible').length > 0 || jQuery('.ajax-loader3:visible').length > 0) {
+                            alert(notReadyMessage);
+                        } else {
+                            var currentShipmentCode = jQuery('input[name="shipping_method"]:checked').val();
+                            if (currentShipmentCode != window.paylikeSelectedMethodOfShipping) {
+                                alert(notReadyMessage);
+                            } else {
+                                validatePaylike(2, element);
+                            }
+                        }
+                    } else {
+                        alert(notReadyMessage);
+                    }
+                }
+            }
+        });
+
+
+        // fix bug in one page checkout
+
+
+        Review.prototype.oldSave = Review.prototype.save;
+        Review.prototype.save = function () {
+            validatePaylike(1);
+        }
+
+        var validatePaylike = function (checkoutExt, element) {
+            if (jQuery("#p_method_paylike").is(":checked")) {
+                if (publicKey) {
+                    var paylike = Paylike(publicKey);
+                    document.getElementById("transaction-id").removeAttribute("disabled");
+                    var args = {
+                        title: popupTitle,
+                        currency: currency,
+                        amount: paylikeVAR.amountpaylike,
+                        locale: locale,
+                        custom: {
+                            quoteId: quoteId,
+                            products: jQuery.parseJSON(products),
+                            customer: {
+                                name: paylikeVAR.name,
+                                email: paylikeVAR.email,
+                                phoneNo: paylikeVAR.telephone,
+                                address: paylikeVAR.address,
+                                IP: customerIp
+                            },
+                            platform: {
+                                name: 'Magento',
+                                version: platform_version,
+                            },
+                            paylikePluginVersion: version
+                        }
+                    };
+                    if (typeof window.oscPlaceOrder === 'function') {
+                        args.custom.ecommerce = {
+                            name: 'OneStepCheckout',
+                            version: oscVersion
+                        };
+                    }
+
+                    paylike.popup(args, function (err, res) {
+                        if (err) {
+                            if (err == 'closed') {
+                                //document.getElementById('p_method_paymentgateway').checked = false;
+                            }
+                            return console.log(err);
+                        }
+                        document.getElementById("transaction-id").value = res.transaction.id.toString();
+
+                        if (checkoutExt == 1)
+                            review.oldSave();
+                        if (checkoutExt == 2)
+                            window.paylikeoscOldPlaceOrder(element);
+                    });
+                } else {
+                    var message = '';
+                    if (payment_mode == 'test') {
+                        message = 'The Paylike test Public key has not been set';
+                    } else {
+                        message = 'The Paylike live Public key has not been set';
+                    }
+                    showError(message);
+                }
+            } else {
+                if (checkoutExt == 1)
+                    review.oldSave();
+                if (checkoutExt == 2)
+                    window.paylikeoscOldPlaceOrder(element);
+            }
+        }
+
+
+	</script>
+	<input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
+    <?php
+}

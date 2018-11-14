@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<layout version="1.0">
+	<!-- Adding the block in sales/order/view page -->
+	<adminhtml_sales_order_view>
+		<!-- You can change the reference to whatever you like. Look ate layout/sales.xml for more options -->
+		<!-- This should be same in Model/Observer.php::getSalesOrderViewInfo() -->
+		<reference name="order_info">
+			<block type="adminhtml/sales_order_view_info" name="paylike.order.info.adminoperations.block" template="paylike/adminoperations.phtml" before="order_history" ></block>
+		</reference>
+		<reference name="order_info">
+			<remove name="paylike.order.info.adminoperations.block" />
+		</reference>
+	</adminhtml_sales_order_view>
+</layout>
