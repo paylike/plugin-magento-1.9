@@ -1,9 +1,7 @@
 <?php
 
-require_once dirname( __FILE__ ) . '/../Model/api/Client.php';
-require_once dirname( __FILE__ ) . '/../Model/api/Card.php';
-require_once dirname( __FILE__ ) . '/../Model/api/Transaction.php';
-require_once dirname( __FILE__ ) . '/../Model/api/Adapter.php';
+
+use Paylike\Exception\ApiException;
 
 class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 
@@ -22,11 +20,14 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	protected $_formBlockType = 'paylike_payment/form_paylike';
 	protected $_infoBlockType = 'paylike_payment/info_paylike';
 
+	private $client;
+
 	/**
 	 * @throws Varien_Exception
 	 */
 	public function _construct() {
 		parent::_construct();
+
 		$this->_init( 'paylike_payment/paylike' );
 	}
 
@@ -40,18 +41,32 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 * @throws Varien_Exception
 	 */
 	public function authorize( Varien_Object $payment, $amount, $ajax = false ) {
+		$order_id = $payment->getOrder()->getId();
+		/** @var Mage_Sales_Model_Order $order */
+		$order = $payment->getOrder();
 
-		$order  = $payment->getOrder();
-		$apiKey = $this->getApiKey();
+		Mage::log( '------------- Start payment --------------' . PHP_EOL . "Info: Begin processing payment for order $order_id for the amount of {$order->getGrandTotal()}." . PHP_EOL . 'Transaction id:' . $payment->getPaylikeTransactionId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__ );
+
+		/** The transaction id is a getter from the request, paylike_transaction_id */
 		$payment->setTransactionId( $payment->getPaylikeTransactionId() );
 		$payment->setIsTransactionClosed( 0 );
 
-		Paylike\Client::setKey( $this->getApiKey() );
-		$fetch = Paylike\Transaction::fetch( $payment->getTransactionId() );
+		try {
+			$transaction = $this->getClient()->transactions()->fetch( $payment->getPaylikeTransactionId() );
+		} catch ( ApiException  $exception ) {
+			$message = $this->handleExceptions( $exception, 'Issue: Authorization Failed!' );
+			Mage::throwException( $message );
+
+			return $this;
+		}
+
+		if ( ! $transaction['succesfull'] ) {
+			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__ );
+			Mage::throwException( Mage::helper( 'paylike_payment' )->__( 'There has been a problem, the transaction failed, try to pay again, or contact support' ) );
+		}
 
 
-		$order_id = $payment->getOrder()->getId();
-		$data     = array(
+		$data = array(
 			'paylike_tid'     => $payment->getPaylikeTransactionId(),
 			'order_id'        => $order_id,
 			'payed_at'        => date( 'Y-m-d H:i:s' ),
@@ -596,6 +611,63 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		$descriptor = preg_replace( '/^[\x20-\x7E]$/', '', $descriptor );
 
 		return substr( $descriptor, 0, 22 );
+	}
+
+	/**
+	 * Log exceptions.
+	 *
+	 * @param \Paylike\Exception\ApiException $exception
+	 * @param string                          $context
+	 *
+	 * @return bool|string
+	 */
+	public function handleExceptions( $exception, $context = '' ) {
+		if ( ! $exception ) {
+			return false;
+		}
+		$exception_type = get_class( $exception );
+		$message        = '';
+		switch ( $exception_type ) {
+			case 'Paylike\\Exception\\NotFound':
+				$message = Mage::helper( 'paylike_payment' )->__( 'Transaction not found! Check the transaction key used for the operation.' );
+				break;
+			case 'Paylike\\Exception\\InvalidRequest':
+				$message = Mage::helper( 'paylike_payment' )->__( 'The request is not valid! Check if there is any validation bellow this message and adjust if possible, if not, and the problem persists, contact the developer.' );
+				break;
+			case 'Paylike\\Exception\\Forbidden':
+				$message = Mage::helper( 'paylike_payment' )->__( 'The operation is not allowed! You do not have the rights to perform the operation, make sure you have all the grants required on your Paylike account.' );
+				break;
+			case 'Paylike\\Exception\\Unauthorized':
+				$message = Mage::helper( 'paylike_payment' )->__( 'The operation is not properly authorized! Check the credentials set in settings for Paylike.' );
+				break;
+			case 'Paylike\\Exception\\Conflict':
+				$message = Mage::helper( 'paylike_payment' )->__( 'The operation leads to a conflict! The same transaction is being requested for modification at the same time. Try again later.' );
+				break;
+			case 'Paylike\\Exception\\ApiConnection':
+				$message = Mage::helper( 'paylike_payment' )->__( 'Network issues ! Check your connection and try again.' );
+				break;
+			case 'Paylike\\Exception\\ApiException':
+				$message = Mage::helper( 'paylike_payment' )->__( 'There has been a server issue! If this problem persists contact the developer.' );
+				break;
+		}
+		$message = Mage::helper( 'paylike_payment' )->__( 'Error: ' ) . $message;
+		Mage::logException( $exception );
+
+		return $message;
+	}
+
+	/**
+	 * @return \Paylike\Paylike
+	 * @throws ApiException
+	 */
+	private function getClient() {
+
+		require_once dirname( __FILE__ ) . '/api/vendor/autoload.php';
+		if ( ! $this->client ) {
+			$this->client = new \Paylike\Paylike( $this->getApiKey() );
+		}
+
+		return $this->client;
 	}
 
 
