@@ -2,7 +2,6 @@
     <modules>
         <Paylike_Payment>
             <active>true</active>
-            <version>1.0.2</version>
             <codePool>community</codePool>
             <depends>
                 <Mage_Payment/>

@@ -28,7 +28,7 @@ Under the extension settings, you can:
  * Update the payment method description in the payment gateways list
  * Update the credit card logos that you want to show (you can change which one you accept under the paylike account).
  * Update the title that shows up in the payment popup 
- * Update the popup description, choose whether you want to show the popup  (the cart contents will show up instead)
+ * Update the popup description, choose whether you want to show the popup  (the cart conztents will show up instead)
  * Add test/live keys
  * Set payment mode (test/live)
  * Change the capture type (Instant/Delayed)
