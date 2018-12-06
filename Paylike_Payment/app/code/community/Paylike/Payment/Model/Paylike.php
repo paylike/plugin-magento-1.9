@@ -45,7 +45,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		/** @var Mage_Sales_Model_Order $order */
 		$order = $payment->getOrder();
 
-		Mage::log( '------------- Start payment --------------' . PHP_EOL . "Info: Begin processing payment for order $order_id for the amount of {$order->getGrandTotal()}." . PHP_EOL . 'Transaction id:' . $payment->getPaylikeTransactionId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__ );
+		Mage::log( '------------- Start payment --------------' . PHP_EOL . "Info: Begin processing payment for order $order_id for the amount of {$order->getGrandTotal()}." . PHP_EOL . 'Transaction id:' . $payment->getPaylikeTransactionId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG, 'paylike.log' );
 
 		/** The transaction id is a getter from the request, paylike_transaction_id */
 		$payment->setTransactionId( $payment->getPaylikeTransactionId() );
@@ -60,8 +60,8 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			return $this;
 		}
 
-		if ( ! $transaction['succesfull'] ) {
-			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__ );
+		if ( ! $transaction['successful'] ) {
+			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::ERR, 'paylike.log' );
 			Mage::throwException( Mage::helper( 'paylike_payment' )->__( 'There has been a problem, the transaction failed, try to pay again, or contact support' ) );
 		}
 
@@ -96,49 +96,47 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	/**
 	 * @param Varien_Object $payment
 	 * @param               $amount
-	 * @param bool          $ajax
 	 *
 	 * @return $this|Mage_Payment_Model_Abstract
 	 * @throws Mage_Core_Exception
-	 * @throws Mage_Core_Model_Store_Exception
 	 * @throws Varien_Exception
 	 */
-	public function capture( Varien_Object $payment, $amount, $ajax = false ) {
-		if ( $amount <= 0 ) {
-			if ( $ajax ) {
-				$response = array(
-					'error'   => 1,
-					'message' => 'The amount is not valid for capture.'
-				);
-
-				return $response;
-			} else {
-				$errormsg = Mage::helper( 'paylike_payment' )->__( 'The amount is not valid for capture.' );
-				Mage::throwException( $errormsg );
-			}
-		}
+	public function capture( Varien_Object $payment, $amount ) {
 
 		if ( ! $payment->getLastTransId() ) {
 			$payment->setLastTransId( $payment->getPaylikeTransactionId() );
 		}
 
-		$order         = $payment->getOrder();
-		$order_id      = $order->getId();
-		$real_order_id = $order->getRealOrderId();
-		$currency_code = $order->getOrderCurrencyCode();
-		Paylike\Client::setKey( $this->getApiKey() );
-		$arr     = array(
+		$order           = $payment->getOrder();
+		$order_id        = $order->getId();
+		$real_order_id   = $order->getRealOrderId();
+		$currency_code   = $order->getOrderCurrencyCode();
+		$client          = $this->getClient(); // load the autoloader
+		$currencyManager = new \Paylike\Data\Currencies();
+		$arr             = array(
 			'currency'   => $currency_code,
 			'descriptor' => $this->getDescriptor( "#" . $real_order_id ),
-			'amount'     => Mage::helper( 'paylike_payment/currencies' )->Ceil( $payment->getAmountAuthorized(), $currency_code ),
+			'amount'     => $currencyManager->ceil( $amount, $currency_code ),
 		);
-		$capture = Paylike\Transaction::capture( $payment->getLastTransId(), $arr );
-		Mage::log( 'Capture' . json_encode( $capture ) );
-		Mage::log( 'Key:' . json_encode( $this->getApiKey() ) );
+		Mage::log( '------------- Start capture --------------' . PHP_EOL . "Info: Begin capturing payment for order $order_id for the amount of {$arr['amount']}. Currency: {$arr['currency']}" . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::DEBUG,'paylike.log' );
 
-		if ( ! $capture ) {
+		try {
+			$transaction = $this->getClient()->transactions()->capture( $payment->getLastTransId(), $arr );
+		} catch ( ApiException  $exception ) {
+			$message = $this->handleExceptions( $exception, 'Issue: Authorization Failed!' );
+			Mage::throwException( $message );
+
+			return $this;
+		}
+
+		Mage::log( 'Capture' . json_encode( $transaction ), false, 'paylike.log' );
+
+		if ( ! $transaction['successful'] ) {
+			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
 			Mage::throwException( 'Capture has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
 		}
+
+		// store in admin table
 		$paylike_admin = Mage::getModel( 'paylike_payment/paylikeadmin' )
 		                     ->getCollection()
 		                     ->addFieldToFilter( 'paylike_tid', $payment->getPaylikeTransactionId() )
@@ -194,282 +192,80 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	/**
 	 * @param Varien_Object $payment
 	 * @param float         $amount
-	 * @param bool          $ajax
 	 *
 	 * @return $this|array|Mage_Payment_Model_Abstract
 	 * @throws Mage_Core_Exception
 	 * @throws Varien_Exception
 	 */
-	public function refund( Varien_Object $payment, $amount, $ajax = false ) {
+	public function refund( Varien_Object $payment, $amount ) {
+
+		$order         = $payment->getOrder();
+		$real_order_id = $order->getRealOrderId();
+
 		$order_id      = $payment->getOrder()->getId();
-		$paylike_admin = Mage::getModel( 'paylike_payment/paylikeadmin' )
-		                     ->getCollection()
-		                     ->addFieldToFilter( 'paylike_tid', $payment->getPaylikeTransactionId() )
-		                     ->addFieldToFilter( 'order_id', $order_id )
-		                     ->getFirstItem()
-		                     ->getData();
+		$currency_code = $order->getOrderCurrencyCode();
 
-		if ( ! empty( $paylike_admin ) && $paylike_admin['captured'] == 'YES' ) {
-			$apiKey = $this->getApiKey();
-			if ( empty( $apiKey ) ) {
-				if ( $ajax ) {
-					$response = array(
-						'error'   => 1,
-						'message' => 'The API key is not valid.'
-					);
+		$client          = $this->getClient(); // load the autoloader
+		$currencyManager = new \Paylike\Data\Currencies();
+		$arr             = array(
+			'descriptor' => $this->getDescriptor( '#' . $real_order_id ),
+			'amount'     => $currencyManager->ceil( $amount, $currency_code )
+		);
+		Mage::log( '------------- Start refund --------------' . PHP_EOL . "Info: Begin refund payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG,'paylike.log' );
+		try {
+			$transaction = $this->getClient()->transactions()->refund( $payment->getLastTransId(), $arr );
+		} catch ( ApiException  $exception ) {
+			$message = $this->handleExceptions( $exception, 'Issue: Refund Failed!' );
+			Mage::throwException( $message );
 
-					return $response;
-				} else {
-					$errormsg = Mage::helper( 'paylike_payment' )->__( 'The API key is not valid.' );
-					Mage::throwException( $errormsg );
-				}
-			}
-			if ( $amount <= 0 ) {
-				if ( $ajax ) {
-					$response = array(
-						'error'   => 1,
-						'message' => 'The amount you entered for refund is not valid.'
-					);
-
-					return $response;
-				} else {
-					$errormsg = Mage::helper( 'paylike_payment' )->__( 'The amount you entered for refund is not valid.' );
-					Mage::throwException( $errormsg );
-				}
-			}
-			Paylike\Client::setKey( $this->getApiKey() );
-			$order         = $payment->getOrder();
-			$real_order_id = $order->getRealOrderId();
-			$currency_code = $order->getOrderCurrencyCode();
-			$arr           = array(
-				'descriptor' => $this->getDescriptor( '#' . $real_order_id ),
-				'amount'     => Mage::helper( 'paylike_payment/currencies' )->Ceil( $payment->getAmountPaid(), $currency_code )
-			);
-			$refund        = Paylike\Transaction::refund( $payment->getLastTransId(), $arr );
-			if ( is_array( $refund ) && ! empty( $refund['error'] ) && $refund['error'] == 1 ) {
-				if ( $ajax ) {
-					$response = array(
-						'error'   => 1,
-						'message' => $refund['message']
-					);
-
-					return $response;
-				} else {
-					$errormsg = Mage::helper( 'paylike_payment' )->__( $refund['message'] );
-					Mage::throwException( $errormsg );
-				}
-			} else {
-				if ( ! empty( $refund['transaction'] ) ) {
-					$payment->setTransactionId( $payment->getPaylikeTransactionId() );
-
-					$id   = $paylike_admin['id'];
-					$data = array(
-						'refunded_amount' => $paylike_admin['refunded_amount'] + $amount
-					);
-
-					$model = Mage::getModel( 'paylike_payment/paylikeadmin' );
-
-					try {
-						$model->load( $id )
-						      ->addData( $data )
-						      ->setId( $id )
-						      ->save();
-
-						if ( $ajax ) {
-							$response = array(
-								'success' => 1,
-								'message' => 'The transaction has been refunded successfully.'
-							);
-
-							return $response;
-						} else {
-							return $this;
-						}
-					} catch ( Exception $e ) {
-						if ( $ajax ) {
-							$response = array(
-								'error'   => 1,
-								'message' => $e->getMessage()
-							);
-
-							return $response;
-						} else {
-							$errormsg = Mage::helper( 'paylike_payment' )->__( $e->getMessage() );
-							Mage::throwException( $errormsg );
-						}
-					}
-				} else {
-					if ( ! empty( $refund[0]['message'] ) ) {
-						if ( $ajax ) {
-							$response = array(
-								'error'   => 1,
-								'message' => $refund[0]['message']
-							);
-
-							return $response;
-						} else {
-							$errormsg = Mage::helper( 'paylike_payment' )->__( $refund[0]['message'] );
-							Mage::throwException( $errormsg );
-						}
-					} else {
-						if ( $ajax ) {
-							$response = array(
-								'error'   => 1,
-								'message' => 'The transaction is not valid.'
-							);
-
-							return $response;
-						} else {
-							$errormsg = Mage::helper( 'paylike_payment' )->__( 'The transaction is not valid.' );
-							Mage::throwException( $errormsg );
-						}
-					}
-				}
-			}
-		} else if ( ! empty( $paylike_admin ) && $paylike_admin['captured'] == 'NO' ) {
-			if ( $ajax ) {
-				$response = array(
-					'error'   => 1,
-					'message' => 'In order to refund you first need to capture the transaction.'
-				);
-
-				return $response;
-			} else {
-				$errormsg = Mage::helper( 'paylike_payment' )->__( 'In order to refund you first need to capture the transaction.' );
-				Mage::throwException( $errormsg );
-			}
-		} else {
-			if ( $ajax ) {
-				$response = array(
-					'error'   => 1,
-					'message' => 'The transaction is not valid.'
-				);
-
-				return $response;
-			} else {
-				$errormsg = Mage::helper( 'paylike_payment' )->__( 'The transaction is not valid.' );
-				Mage::throwException( $errormsg );
-			}
+			return $this;
 		}
+
+		Mage::log( 'Refund' . json_encode( $transaction ), Zend_Log::DEBUG,'paylike.log' );
+
+		if ( ! $transaction['successful'] ) {
+			Mage::log( '------------- Problem refund --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
+			Mage::throwException( 'Refund has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
+		}
+
 
 		return $this;
 	}
 
 	/**
 	 * @param Varien_Object $payment
-	 * @param bool          $ajax
 	 *
 	 * @return array|Mage_Payment_Model_Abstract
 	 * @throws Mage_Core_Exception
 	 * @throws Varien_Exception
 	 */
-	public function void( Varien_Object $payment, $ajax = false ) {
+	public function void( Varien_Object $payment ) {
+
+		$order         = $payment->getOrder();
+
 		$order_id      = $payment->getOrder()->getId();
-		$paylike_admin = Mage::getModel( 'paylike_payment/paylikeadmin' )
-		                     ->getCollection()
-		                     ->addFieldToFilter( 'paylike_tid', $payment->getPaylikeTransactionId() )
-		                     ->addFieldToFilter( 'order_id', $order_id )
-		                     ->getFirstItem()
-		                     ->getData();
+		$currency_code = $order->getOrderCurrencyCode();
+		$amount = $payment->getAmountAuthorized();
+		$client          = $this->getClient(); // load the autoloader
+		$currencyManager = new \Paylike\Data\Currencies();
+		$arr             = array(
+			'amount'     => $currencyManager->ceil( $amount, $currency_code )
+		);
+		Mage::log( '------------- Start void --------------' . PHP_EOL . "Info: Begin void payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG,'paylike.log' );
+		try {
+			$transaction = $this->getClient()->transactions()->void( $payment->getLastTransId(), $arr );
+		} catch ( ApiException  $exception ) {
+			$message = $this->handleExceptions( $exception, 'Issue: Void Failed!' );
+			Mage::throwException( $message );
 
-		if ( ! empty( $paylike_admin ) && $paylike_admin['captured'] == 'NO' ) {
-			$amount = $payment->getAmountAuthorized();
-			$arr    = array(
-				'amount' => Mage::helper( 'paylike_payment/currencies' )->Ceil( $payment->getAmountAuthorized(), $payment->getOrder()->getOrderCurrencyCode() ),
-			);
-			$apiKey = $this->getApiKey();
-			if ( empty( $apiKey ) ) {
-				if ( $ajax ) {
-					$response = array(
-						'error'   => 1,
-						'message' => 'The API key is not valid.'
-					);
+			return $this;
+		}
 
-					return $response;
-				} else {
-					$errormsg = Mage::helper( 'paylike_payment' )->__( 'The API key is not valid.' );
-					Mage::throwException( $errormsg );
-				}
-			}
-			Paylike\Client::setKey( $this->getApiKey() );
-			$void = Paylike\Transaction::void( $payment->getLastTransId(), $arr );
+		Mage::log( 'Void' . json_encode( $transaction ), Zend_Log::DEBUG,'paylike.log' );
 
-			if ( is_array( $void ) && ! empty( $void['error'] ) && $void['error'] == 1 ) {
-				if ( $ajax ) {
-					$response = array(
-						'error'   => 1,
-						'message' => $void['message'],
-					);
-
-					return $response;
-				} else {
-					$errormsg = Mage::helper( 'paylike_payment' )->__( $void['message'] );
-					Mage::throwException( $errormsg );
-				}
-			} else {
-				if ( ! empty( $void['transaction'] ) ) {
-					if ( $ajax ) {
-						$response = array(
-							'success' => 1,
-							'message' => 'The transaction has been successfully voided.',
-						);
-
-						return $response;
-					} else {
-						return $this;
-					}
-				} else {
-					if ( ! empty( $void[0]['message'] ) ) {
-						if ( $ajax ) {
-							$response = array(
-								'error'   => 1,
-								'message' => $void[0]['message'],
-							);
-
-							return $response;
-						} else {
-							$errormsg = Mage::helper( 'paylike_payment' )->__( $void[0]['message'] );
-							Mage::throwException( $errormsg );
-						}
-					} else {
-						if ( $ajax ) {
-							$response = array(
-								'error'   => 1,
-								'message' => 'The transaction is not valid.'
-							);
-
-							return $response;
-						} else {
-							$errormsg = Mage::helper( 'paylike_payment' )->__( 'The transaction is not valid.' );
-							Mage::throwException( $errormsg );
-						}
-					}
-				}
-			}
-		} else if ( ! empty( $paylike_admin ) && $paylike_admin['captured'] == 'YES' ) {
-			if ( $ajax ) {
-				$response = array(
-					'error'   => 1,
-					'message' => 'You can\'t void the transaction because it has already been captured, you can only refund.'
-				);
-
-				return $response;
-			} else {
-				$errormsg = Mage::helper( 'paylike_payment' )->__( 'You can\'t void the transaction because it has already been captured, you can only refund.' );
-				Mage::throwException( $errormsg );
-			}
-		} else {
-			if ( $ajax ) {
-				$response = array(
-					'error'   => 1,
-					'message' => 'The transaction is not valid.'
-				);
-
-				return $response;
-			} else {
-				$errormsg = Mage::helper( 'paylike_payment' )->__( 'The transaction is not valid.' );
-				Mage::throwException( $errormsg );
-			}
+		if ( ! $transaction['successful'] ) {
+			Mage::log( '------------- Problem Void --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
+			Mage::throwException( 'Void has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
 		}
 	}
 
@@ -572,23 +368,37 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 
 	/**
 	 * Get the key of the global merchant descriptor
+	 * @throws Mage_Core_Exception
 	 */
 	protected function getGlobalMerchantDescriptor() {
-		Paylike\Client::setKey( $this->getApiKey() );
-		$adapter = Paylike\Client::getAdapter();
-		$data    = $adapter->request( 'me', null, 'get' );
-		if ( ! isset( $data['identity'] ) ) {
-			return null;
-		} else {
-			$merchants = $adapter->request( 'identities/' . $data['identity']['id'] . '/merchants?limit=10', $data, 'get' );
+		Mage::log( 'Info: Attempting to fetch the global merchant id ' . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, false, 'paylike.log' );
+		try {
+			$identity = $this->getClient()->apps()->fetch();
+		} catch ( \Paylike\Exception\ApiException $exception ) {
+			$error = Mage::helper( 'paylike_payment' )->__( "The private key doesn't seem to be valid", 'woocommerce-gateway-paylike' );
+
+			Mage::throwException( $error );
+
+			return false;
 		}
-		foreach ( $merchants as $merchant ) {
-			if ( $this->getPaymentMode() == 'test' && $merchant['test'] && $merchant['key'] == $this->getPublicKey() ) {
-				return $merchant['descriptor'];
+		try {
+			$merchants = $this->getClient()->merchants()->find( $identity['id'] );
+			if ( $merchants ) {
+				foreach ( $merchants as $merchant ) {
+					if ( $this->getPaymentMode() == 'test' && $merchant['test'] && $merchant['key'] == $this->getPublicKey() ) {
+						return $merchant['descriptor'];
+					}
+					if ( ! $merchant['test'] && $this->getPaymentMode() != 'test' && $merchant['key'] == $this->getPublicKey() ) {
+						return $merchant['descriptor'];
+					}
+				}
 			}
-			if ( ! $merchant['test'] && $this->getPaymentMode() != 'test' && $merchant['key'] == $this->getPublicKey() ) {
-				return $merchant['descriptor'];
-			}
+		} catch ( \Paylike\Exception\ApiException $exception ) {
+			$error = Mage::helper( 'paylike_payment' )->__( 'No valid merchant id was found', 'woocommerce-gateway-paylike' );
+
+			Mage::throwException( $error );
+
+			return false;
 		}
 	}
 
@@ -632,7 +442,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 				$message = Mage::helper( 'paylike_payment' )->__( 'Transaction not found! Check the transaction key used for the operation.' );
 				break;
 			case 'Paylike\\Exception\\InvalidRequest':
-				$message = Mage::helper( 'paylike_payment' )->__( 'The request is not valid! Check if there is any validation bellow this message and adjust if possible, if not, and the problem persists, contact the developer.' );
+				$message = Mage::helper( 'paylike_payment' )->__( 'The request is not valid! Check if there is any validation bellow at the end of this message and adjust if possible, if not, and the problem persists, contact the developer.' );
 				break;
 			case 'Paylike\\Exception\\Forbidden':
 				$message = Mage::helper( 'paylike_payment' )->__( 'The operation is not allowed! You do not have the rights to perform the operation, make sure you have all the grants required on your Paylike account.' );
@@ -651,6 +461,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 				break;
 		}
 		$message = Mage::helper( 'paylike_payment' )->__( 'Error: ' ) . $message;
+		$message .= $exception->getMessage();
 		Mage::logException( $exception );
 
 		return $message;

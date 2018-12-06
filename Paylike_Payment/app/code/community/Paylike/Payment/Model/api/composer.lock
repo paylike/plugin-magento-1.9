@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "fcf9456a3f8bf9d237606d3fbdc4b9f5",
+    "content-hash": "86ea7365e54341e11bc5a7c6d477917f",
     "packages": [
         {
             "name": "paylike/php-api",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paylike/php-api.git",
-                "reference": "a1cd5dd3fc6647943d5102d4bb93fd97e8c1eea0"
+                "reference": "1da4f6ecf21412b289564955e965293bc512f1b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paylike/php-api/zipball/a1cd5dd3fc6647943d5102d4bb93fd97e8c1eea0",
-                "reference": "a1cd5dd3fc6647943d5102d4bb93fd97e8c1eea0",
+                "url": "https://api.github.com/repos/paylike/php-api/zipball/1da4f6ecf21412b289564955e965293bc512f1b6",
+                "reference": "1da4f6ecf21412b289564955e965293bc512f1b6",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
                 }
             ],
             "description": "PHP SDK to communicate with the Paylike HTTP api",
-            "time": "2018-09-20T14:02:20+00:00"
+            "time": "2018-12-05T16:39:45+00:00"
         }
     ],
     "packages-dev": [],

@@ -97,7 +97,6 @@ if (Mage::getStoreConfig('payment/paylike/status')) {
         var version = '<?php echo Mage::getConfig()->getNode('modules/Paylike_Payment/version'); ?>';
         var oscVersion = '<?php echo Mage::getConfig()->getNode('modules/Magestore_Onestepcheckout/version'); ?>';
 
-        <?php Mage::log(Mage::helper('paylike_payment/currencies')->Ceil($grand_total, $currency_code), false, 'paylike.log'); ?>
         // automated testing purposes
         window.paylikeminoramount = paylikeVAR.amountpaylike;
         window.paylikeSelectedMethodOfShipping = selectedShipmentMethod;
