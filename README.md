@@ -1,4 +1,4 @@
-# Magento plugin for Paylike
+# Magento plugin for Paylike [![Build Status](https://travis-ci.org/paylike/plugin-magento-1.9.svg?branch=master)](https://travis-ci.org/paylike/plugin-magento-1.9)
 
 This plugin is *not* developed or maintained by Paylike but kindly made
 available by the community.
@@ -9,8 +9,9 @@ You can also find information about the plugin here: https://paylike.io/plugins/
 
 ## Supported Magento versions
 
+[![Last succesfull test](https://log.derikon.ro/api/v1/log/read?tag=magento19&view=svg&label=Magento&key=ecommerce&background=d75f07)](https://log.derikon.ro/api/v1/log/read?tag=woocommerce&view=html)
+
 * The plugin has been tested with most versions of Magento at every iteration. We recommend using the latest version of Magento, but if that is not possible for some reason, test the plugin with your Magento version and it would probably function properly. 
-* Magento version last tested on: *1.9.2.3*
 
 ## Installation
 
@@ -19,6 +20,7 @@ You can also find information about the plugin here: https://paylike.io/plugins/
 2. After the plugin is installed go to the configuration screen : System-> Configuration (top menu)  -> Sales -> Payment Methods (sidebar menu) -> Paylike payment
 3. In this settings screen you need to  add the Public and App key that you can find in your Paylike account.
 
+
 ## Updating settings
 
 Under the extension settings, you can:
@@ -26,14 +28,26 @@ Under the extension settings, you can:
  * Update the payment method description in the payment gateways list
  * Update the credit card logos that you want to show (you can change which one you accept under the paylike account).
  * Update the title that shows up in the payment popup 
- * Update the popup description, choose whether you want to show the popup  (the cart contents will show up instead)
+ * Update the popup description, choose whether you want to show the popup  (the cart conztents will show up instead)
  * Add test/live keys
  * Set payment mode (test/live)
- * Change the capture type (Instant/Manual via Paylike Tool)
+ * Change the capture type (Instant/Delayed)
  
- ## Paylike tool
+## Payment management
+
+Since version 1.0.6 we now support the magento standard UI for orders. In short we support the Void, Invoice, and Credit memo available for any sale order processed via our payment gateway module. See more info for each case bellow.
  
- The paylike tool is located under orders view screen, in the information tab, on the Process Paylike Payment section. 
- You can use this to capture payments in "Delayed" mode, or to refund/void transactions that have been captured/authorized. 
+### Capture
+ 
+* In *instant* mode, the authorization takes place via the popup, while the capturing is done on the server right on the order checkout page, so you don't need to capture after. 
+* In *delayed* mode you can capture payments by creating an invoice from the order in question from magento. Leave the capture online on to capture the payment automatically. 
+
+### Refund
+
+* Orders can only be refunded if they have been captured. If that is the case, you can create a credit memo from the invoice of the order. *All transactions take place in the amount converted to the currency the user selected. Because of that partial refund is not yet possible on magento*
+
+### Void
+
+* In delayed mode, you can click void to void the payment if when this hasn't been captured, on the order interface screen.
  
   

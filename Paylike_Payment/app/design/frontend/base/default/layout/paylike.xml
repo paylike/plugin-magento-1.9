@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<layout version="1.0.0">
+    <paylike_common_section>
+        <reference name="head">
+            <block type="core/text" name="paylike">
+                <action method="setText" ifconfig="payment/paylike/status">
+                    <text>
+                        <![CDATA[<script type="text/javascript" src="//sdk.paylike.io/3.js"></script>]]>
+                    </text>
+                </action>
+            </block>
+        </reference>        
+    </paylike_common_section>
+    <checkout_onepage_index>
+        <update handle="paylike_common_section"/>
+    </checkout_onepage_index>
+    <onestepcheckout_index_index>
+        <update handle="paylike_common_section"/>
+    </onestepcheckout_index_index>
+    
+    <onestepcheckout_payment_review_material_20columns>
+        <reference name="review_info">
+            <block type="core/template" name="paylike.updated.total.block" template="paylike/ajaxupdate.phtml"  />
+        </reference>
+    </onestepcheckout_payment_review_material_20columns>
+    
+</layout>
