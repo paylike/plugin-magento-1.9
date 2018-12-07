@@ -214,9 +214,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 
 		$real_order_id = $order->getRealOrderId();
 		if ( $order->getOrderCurrencyCode() != $order->getBaseCurrencyCode() ) {
-			Mage::throwException( 'This order has been paid with ' . $order->getOrderCurrencyCode() . ' while the store base currency was ' . $order->getBaseCurrencyCode() . '. Because of that you cannot refund a different amount than the base amount. This is due to the fact that the full base amount corresponds directly with the full order amount, in the currency the customer paid. The main reason is that an accurate conversion is not possible.' );
+			if ( $amount != $order->getBaseGrandTotal() ) {
+				Mage::throwException( 'This order has been paid with ' . $order->getOrderCurrencyCode() . ' while the store base currency was ' . $order->getBaseCurrencyCode() . '. Because of that you cannot refund a different amount than the base amount. This is due to the fact that the full base amount corresponds directly with the full order amount, in the currency the customer paid. The main reason is that an accurate conversion is not possible.' );
 
-			return $this;
+				return $this;
+			}
 
 			$amount = $payment->getAmountAuthorized();
 		}
