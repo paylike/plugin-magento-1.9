@@ -107,10 +107,15 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		if ( ! $payment->getLastTransId() ) {
 			$payment->setLastTransId( $payment->getPaylikeTransactionId() );
 		}
-
+		/** @var Mage_Sales_Model_Order $order */
 		$order = $payment->getOrder();
 
 		if ( $order->getOrderCurrencyCode() != $order->getBaseCurrencyCode() ) {
+			if ( $amount != $order->getBaseGrandTotal() ) {
+				Mage::throwException( 'This order has been paid with ' . $order->getOrderCurrencyCode() . ' while the store base currency was ' . $order->getBaseCurrencyCode() . '. Because of that you cannot capture a different amount than the base amount. This is due to the fact that the full base amount corresponds directly with the full order amount, in the currency the customer paid. The main reason is that an accurate conversion is not possible.' );
+
+				return $this;
+			}
 			$amount = $payment->getAmountAuthorized();
 		}
 
@@ -204,11 +209,15 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 * @throws Varien_Exception
 	 */
 	public function refund( Varien_Object $payment, $amount ) {
-
-		$order         = $payment->getOrder();
+		/** @var Mage_Sales_Model_Order $order */
+		$order = $payment->getOrder();
 
 		$real_order_id = $order->getRealOrderId();
 		if ( $order->getOrderCurrencyCode() != $order->getBaseCurrencyCode() ) {
+			Mage::throwException( 'This order has been paid with ' . $order->getOrderCurrencyCode() . ' while the store base currency was ' . $order->getBaseCurrencyCode() . '. Because of that you cannot refund a different amount than the base amount. This is due to the fact that the full base amount corresponds directly with the full order amount, in the currency the customer paid. The main reason is that an accurate conversion is not possible.' );
+
+			return $this;
+
 			$amount = $payment->getAmountAuthorized();
 		}
 		$order_id      = $payment->getOrder()->getId();
@@ -325,7 +334,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		if ( $this->getPaymentMode() == 'test' ) {
 			return $this->getConfigData( 'test_api_key' );
 		} else {
-			return $this->getConfigData(  'live_api_key');
+			return $this->getConfigData( 'live_api_key' );
 		}
 	}
 
@@ -334,9 +343,9 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 */
 	protected function getPublicKey() {
 		if ( $this->getPaymentMode() == 'test' ) {
-			return $this->getConfigData( 'test_public_key');
+			return $this->getConfigData( 'test_public_key' );
 		} else {
-			return $this->getConfigData( 'live_public_key');
+			return $this->getConfigData( 'live_public_key' );
 		}
 	}
 
@@ -344,7 +353,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 * @return mixed
 	 */
 	protected function getPaymentMode() {
-		return $this->getConfigData( 'payment_mode');
+		return $this->getConfigData( 'payment_mode' );
 	}
 
 	/* protected  function getPopupTitle()
