@@ -3,6 +3,9 @@ $quote = Mage::getSingleton('checkout/cart')->getQuote();
 $paylike_helper = Mage::helper('paylike_payment');
 $grand_total = $this->helper('checkout/cart')->getQuote()->getGrandTotal();
 $currency_code = Mage::app()->getStore()->getCurrentCurrencyCode();
+$paylike        = Mage::getModel( 'paylike_payment/paylike' );
+$client         = $paylike->getClient(); // load vendor
+$currencies     = new \Paylike\Data\Currencies();
 $email = $quote->getBillingAddress()->getEmail();
 $name = $quote->getBillingAddress()->getName();
 if (!$email) {
@@ -13,7 +16,7 @@ if (!$name) {
 } ?>
 <script class="text/javascript">
     paylikeVAR.tax = '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount'); ?>';
-    paylikeVAR.amountpaylike = <?php echo Mage::helper('paylike_payment/currencies')->Ceil($grand_total, $currency_code) ?>;
+    paylikeVAR.amountpaylike = <?php echo $currencies->ceil($grand_total, $currency_code) ?>;
     paylikeVAR.telephone = '<?php echo $paylike_helper->getTelephone(); ?>';
     paylikeVAR.address = '<?php echo $paylike_helper->getAddress(); ?>';
     paylikeVAR.email = '<?php echo $email; ?>';

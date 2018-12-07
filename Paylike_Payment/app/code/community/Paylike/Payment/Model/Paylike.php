@@ -22,6 +22,8 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 
 	private $client;
 
+	private $storeId = null;
+
 	/**
 	 * @throws Varien_Exception
 	 */
@@ -44,7 +46,6 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		$order_id = $payment->getOrder()->getId();
 		/** @var Mage_Sales_Model_Order $order */
 		$order = $payment->getOrder();
-
 		Mage::log( '------------- Start payment --------------' . PHP_EOL . "Info: Begin processing payment for order $order_id for the amount of {$order->getGrandTotal()}." . PHP_EOL . 'Transaction id:' . $payment->getPaylikeTransactionId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG, 'paylike.log' );
 
 		/** The transaction id is a getter from the request, paylike_transaction_id */
@@ -107,7 +108,12 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			$payment->setLastTransId( $payment->getPaylikeTransactionId() );
 		}
 
-		$order           = $payment->getOrder();
+		$order = $payment->getOrder();
+
+		if ( $order->getOrderCurrencyCode() != $order->getBaseCurrencyCode() ) {
+			$amount = $payment->getAmountAuthorized();
+		}
+
 		$order_id        = $order->getId();
 		$real_order_id   = $order->getRealOrderId();
 		$currency_code   = $order->getOrderCurrencyCode();
@@ -118,7 +124,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			'descriptor' => $this->getDescriptor( "#" . $real_order_id ),
 			'amount'     => $currencyManager->ceil( $amount, $currency_code ),
 		);
-		Mage::log( '------------- Start capture --------------' . PHP_EOL . "Info: Begin capturing payment for order $order_id for the amount of {$arr['amount']}. Currency: {$arr['currency']}" . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::DEBUG,'paylike.log' );
+		Mage::log( '------------- Start capture --------------' . PHP_EOL . "Info: Begin capturing payment for order $order_id for the amount of {$arr['amount']}. Currency: {$arr['currency']}" . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG, 'paylike.log' );
 
 		try {
 			$transaction = $this->getClient()->transactions()->capture( $payment->getLastTransId(), $arr );
@@ -132,7 +138,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 		Mage::log( 'Capture' . json_encode( $transaction ), false, 'paylike.log' );
 
 		if ( ! $transaction['successful'] ) {
-			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
+			Mage::log( '------------- Problem payment --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::ERR, 'paylike.log' );
 			Mage::throwException( 'Capture has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
 		}
 
@@ -200,8 +206,11 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	public function refund( Varien_Object $payment, $amount ) {
 
 		$order         = $payment->getOrder();
-		$real_order_id = $order->getRealOrderId();
 
+		$real_order_id = $order->getRealOrderId();
+		if ( $order->getOrderCurrencyCode() != $order->getBaseCurrencyCode() ) {
+			$amount = $payment->getAmountAuthorized();
+		}
 		$order_id      = $payment->getOrder()->getId();
 		$currency_code = $order->getOrderCurrencyCode();
 
@@ -211,7 +220,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			'descriptor' => $this->getDescriptor( '#' . $real_order_id ),
 			'amount'     => $currencyManager->ceil( $amount, $currency_code )
 		);
-		Mage::log( '------------- Start refund --------------' . PHP_EOL . "Info: Begin refund payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG,'paylike.log' );
+		Mage::log( '------------- Start refund --------------' . PHP_EOL . "Info: Begin refund payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG, 'paylike.log' );
 		try {
 			$transaction = $this->getClient()->transactions()->refund( $payment->getLastTransId(), $arr );
 		} catch ( ApiException  $exception ) {
@@ -221,10 +230,10 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			return $this;
 		}
 
-		Mage::log( 'Refund' . json_encode( $transaction ), Zend_Log::DEBUG,'paylike.log' );
+		Mage::log( 'Refund' . json_encode( $transaction ), Zend_Log::DEBUG, 'paylike.log' );
 
 		if ( ! $transaction['successful'] ) {
-			Mage::log( '------------- Problem refund --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
+			Mage::log( '------------- Problem refund --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::ERR, 'paylike.log' );
 			Mage::throwException( 'Refund has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
 		}
 
@@ -235,23 +244,23 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	/**
 	 * @param Varien_Object $payment
 	 *
-	 * @return array|Mage_Payment_Model_Abstract
+	 * @return Paylike_Payment_Model_Paylike
 	 * @throws Mage_Core_Exception
 	 * @throws Varien_Exception
 	 */
 	public function void( Varien_Object $payment ) {
 
-		$order         = $payment->getOrder();
+		$order = $payment->getOrder();
 
-		$order_id      = $payment->getOrder()->getId();
-		$currency_code = $order->getOrderCurrencyCode();
-		$amount = $payment->getAmountAuthorized();
+		$order_id        = $payment->getOrder()->getId();
+		$currency_code   = $order->getOrderCurrencyCode();
+		$amount          = $payment->getAmountAuthorized();
 		$client          = $this->getClient(); // load the autoloader
 		$currencyManager = new \Paylike\Data\Currencies();
 		$arr             = array(
-			'amount'     => $currencyManager->ceil( $amount, $currency_code )
+			'amount' => $currencyManager->ceil( $amount, $currency_code )
 		);
-		Mage::log( '------------- Start void --------------' . PHP_EOL . "Info: Begin void payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG,'paylike.log' );
+		Mage::log( '------------- Start void --------------' . PHP_EOL . "Info: Begin void payment for order $order_id for the amount of {$arr['amount']}." . PHP_EOL . 'Transaction id:' . $payment->getLastTransId() . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::DEBUG, 'paylike.log' );
 		try {
 			$transaction = $this->getClient()->transactions()->void( $payment->getLastTransId(), $arr );
 		} catch ( ApiException  $exception ) {
@@ -261,10 +270,10 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 			return $this;
 		}
 
-		Mage::log( 'Void' . json_encode( $transaction ), Zend_Log::DEBUG,'paylike.log' );
+		Mage::log( 'Void' . json_encode( $transaction ), Zend_Log::DEBUG, 'paylike.log' );
 
 		if ( ! $transaction['successful'] ) {
-			Mage::log( '------------- Problem Void --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__,Zend_Log::ERR,'paylike.log' );
+			Mage::log( '------------- Problem Void --------------' . PHP_EOL . json_encode( $transaction ) . PHP_EOL . ' -- ' . __FILE__ . ' - Line:' . __LINE__, Zend_Log::ERR, 'paylike.log' );
 			Mage::throwException( 'Void has failed, this may be a problem with your configuration, or with the server. Check your configuration and try again. Key used:' . $this->getApiKey() );
 		}
 	}
@@ -314,9 +323,9 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 */
 	protected function getApiKey() {
 		if ( $this->getPaymentMode() == 'test' ) {
-			return Mage::getStoreConfig( 'payment/paylike/test_api_key' );
+			return $this->getConfigData( 'test_api_key' );
 		} else {
-			return Mage::getStoreConfig( 'payment/paylike/live_api_key' );
+			return $this->getConfigData(  'live_api_key');
 		}
 	}
 
@@ -325,9 +334,9 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 */
 	protected function getPublicKey() {
 		if ( $this->getPaymentMode() == 'test' ) {
-			return Mage::getStoreConfig( 'payment/paylike/test_public_key' );
+			return $this->getConfigData( 'test_public_key');
 		} else {
-			return Mage::getStoreConfig( 'payment/paylike/live_public_key' );
+			return $this->getConfigData( 'live_public_key');
 		}
 	}
 
@@ -335,7 +344,7 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 	 * @return mixed
 	 */
 	protected function getPaymentMode() {
-		return Mage::getStoreConfig( 'payment/paylike/payment_mode' );
+		return $this->getConfigData( 'payment_mode');
 	}
 
 	/* protected  function getPopupTitle()
@@ -469,9 +478,8 @@ class Paylike_Payment_Model_Paylike extends Mage_Payment_Model_Method_Abstract {
 
 	/**
 	 * @return \Paylike\Paylike
-	 * @throws ApiException
 	 */
-	private function getClient() {
+	public function getClient() {
 
 		require_once dirname( __FILE__ ) . '/api/vendor/autoload.php';
 		if ( ! $this->client ) {

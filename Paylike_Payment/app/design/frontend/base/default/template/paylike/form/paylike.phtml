@@ -1,18 +1,21 @@
 <?php
-$quote = Mage::getSingleton('checkout/cart')->getQuote();
-$paylike_helper = Mage::helper('paylike_payment');
-$grand_total = $this->helper('checkout/cart')->getQuote()->getGrandTotal();
-$currency_code = Mage::app()->getStore()->getCurrentCurrencyCode();
-$email = $quote->getBillingAddress()->getEmail();
-$name = $quote->getBillingAddress()->getName();
-if (!$email) {
-    $email = $quote->getCustomerEmail();
+$quote          = Mage::getSingleton( 'checkout/cart' )->getQuote();
+$paylike_helper = Mage::helper( 'paylike_payment' );
+$paylike        = Mage::getModel( 'paylike_payment/paylike' );
+$client         = $paylike->getClient(); // load vendor
+$currencies     = new \Paylike\Data\Currencies();
+$grand_total    = $this->helper( 'checkout/cart' )->getQuote()->getGrandTotal();
+$currency_code  = Mage::app()->getStore()->getCurrentCurrencyCode();
+$email          = $quote->getBillingAddress()->getEmail();
+$name           = $quote->getBillingAddress()->getName();
+if ( ! $email ) {
+	$email = $quote->getCustomerEmail();
 }
-if (!$name) {
-    $name = $quote->getCustomerName();
+if ( ! $name ) {
+	$name = $quote->getCustomerName();
 }
-if (Mage::getStoreConfig('payment/paylike/status')) {
-    ?>
+if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
+	?>
 	<style type="text/css">
 		.paylike-logo {
 			width: 40px;
@@ -36,21 +39,21 @@ if (Mage::getStoreConfig('payment/paylike/status')) {
 	<script type="text/javascript">
         document.getElementById('p_method_paylike').checked = false;
         var paylikeVAR = {
-            tax: '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount'); ?>',
+            tax: '<?php echo Mage::helper( 'checkout' )->getQuote()->getShippingAddress()->getData( 'tax_amount' ); ?>',
             telephone: '<?php echo $paylike_helper->getTelephone(); ?>',
             address: '<?php echo $paylike_helper->getAddress(); ?>',
             email: '<?php echo $email; ?>',
             name: '<?php echo $name; ?>',
-            amountpaylike:<?php echo Mage::helper('paylike_payment/currencies')->Ceil($grand_total, $currency_code) ?>};
+            amountpaylike:<?php echo $currencies->ceil( $grand_total, $currency_code ) ?>};
         var payment_method_desc = '<?php echo $paylike_helper->getPaymentMethodDescription(); ?>';
-        var payment_method_caredit_card_logos = '<?php echo $paylike_helper->getCreditCardLogos(true); ?>';
+        var payment_method_caredit_card_logos = '<?php echo $paylike_helper->getCreditCardLogos( true ); ?>';
         var payment_method_title = jQuery('#p_method_paylike').parents('dt').find('label[for="p_method_paylike"]').text().replace(/^\s+|\s+$/g, '');
-        var selectedShipmentMethod = '<?php echo Mage::helper('checkout')->getQuote()->getShippingAddress()->getShippingMethod(); ?>';
-        var html = '<img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN); ?>frontend/paylike/logo.png" alt="Paylike" title="Paylike" class="v-middle paylike-logo" />';
+        var selectedShipmentMethod = '<?php echo Mage::helper( 'checkout' )->getQuote()->getShippingAddress()->getShippingMethod(); ?>';
+        var html = '<img src="<?php echo Mage::getBaseUrl( Mage_Core_Model_Store::URL_TYPE_SKIN ); ?>frontend/paylike/logo.png" alt="Paylike" title="Paylike" class="v-middle paylike-logo" />';
         html += '<span>' + payment_method_title + '</span>';
         payment_method_caredit_card_logos = jQuery.parseJSON(payment_method_caredit_card_logos);
         jQuery.each(payment_method_caredit_card_logos, function (index, item) {
-            html += '<img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN); ?>frontend/paylike/logos/' + item + '" alt="' + item + '" title="' + item + '" class="v-middle paylike-logo" style="height:26px;" />';
+            html += '<img src="<?php echo Mage::getBaseUrl( Mage_Core_Model_Store::URL_TYPE_SKIN ); ?>frontend/paylike/logos/' + item + '" alt="' + item + '" title="' + item + '" class="v-middle paylike-logo" style="height:26px;" />';
         });
         html += '<p>' + payment_method_desc + '</p>';
         var paylikeRadioButton = jQuery('#p_method_paylike').parents('dt').find('label[for="p_method_paylike"]');
@@ -87,15 +90,15 @@ if (Mage::getStoreConfig('payment/paylike/status')) {
         var popupTitle = '<?php echo $paylike_helper->getPopupTitle(); ?>';
         var currency = '<?php echo $currency_code; ?>';
         var publicKey = '<?php echo $paylike_helper->getPublicKey(); ?>';
-        var notReadyMessage = '<?php echo Mage::helper('paylike_payment')->getAlertOnNotReady(); ?>';
+        var notReadyMessage = '<?php echo Mage::helper( 'paylike_payment' )->getAlertOnNotReady(); ?>';
         var amount = '<?php echo $grand_total; ?>';
-        var quoteId = '<?php echo $this->helper('checkout/cart')->getQuote()->getId(); ?>';
-        var products = '<?php echo $paylike_helper->getProducts(true); ?>';
+        var quoteId = '<?php echo $this->helper( 'checkout/cart' )->getQuote()->getId(); ?>';
+        var products = '<?php echo $paylike_helper->getProducts( true ); ?>';
 
-        var customerIp = '<?php echo Mage::helper('core/http')->getRemoteAddr(); ?>';
+        var customerIp = '<?php echo Mage::helper( 'core/http' )->getRemoteAddr(); ?>';
         var platform_version = '<?php echo Mage::getVersion(); ?>';
-        var version = '<?php echo Mage::getConfig()->getNode('modules/Paylike_Payment/version'); ?>';
-        var oscVersion = '<?php echo Mage::getConfig()->getNode('modules/Magestore_Onestepcheckout/version'); ?>';
+        var version = '<?php echo Mage::getConfig()->getNode( 'modules/Paylike_Payment/version' ); ?>';
+        var oscVersion = '<?php echo Mage::getConfig()->getNode( 'modules/Magestore_Onestepcheckout/version' ); ?>';
 
         // automated testing purposes
         window.paylikeminoramount = paylikeVAR.amountpaylike;
@@ -211,5 +214,5 @@ if (Mage::getStoreConfig('payment/paylike/status')) {
 
 	</script>
 	<input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
-    <?php
+	<?php
 }
