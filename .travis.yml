@@ -27,7 +27,6 @@ install:
   - if [ "$BROWSER" = "chrome" ]; then export CHROMEDRIVER_PATH=./chromedriver/chromedriver; fi
 
 before_script:
-  - sudo echo "216.172.184.192 magento.test-paylike.dk" >> /etc/hosts
   - java -jar $SELENIUM_PATH -role hub -enablePassThrough false -log selenium-server.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for selenium-server to start...; done;
 
