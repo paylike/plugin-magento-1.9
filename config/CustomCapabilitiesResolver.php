@@ -41,7 +41,7 @@ class CustomCapabilitiesResolver implements CustomCapabilitiesResolverInterface 
 			$capabilities->setCapability( 'ms:someEdgeCapability', 'true' );
 		}
 		// When on CI, run Chrome in headless mode
-		if ( ( new CiDetector() )->isCiDetected() && $this->config->browserName === WebDriverBrowserType::CHROME ) {
+		if ( ( ( new CiDetector() )->isCiDetected() || getenv( 'HEADLESS' ) ) && $this->config->browserName === WebDriverBrowserType::CHROME ) {
 			$chromeOptions = new ChromeOptions();
 			// In headless Chrome 60, window size cannot be changed run-time:
 			// https://bugs.chromium.org/p/chromium/issues/detail?id=604324#c46

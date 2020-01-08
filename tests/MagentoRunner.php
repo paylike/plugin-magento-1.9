@@ -187,7 +187,11 @@ class MagentoRunner extends MagentoTestHelper
 	public function processShipping()
 	{
 		$this->waitForElement(WebDriverBy::cssSelector('#shipping-method-buttons-container .button'));
-		$this->click(WebDriverBy::cssSelector('#co-shipping-method-form ul li:first-child #s_method_ups_XPD'));
+		try {
+		$this->click(WebDriverBy::cssSelector('#co-shipping-method-form ul li:first-child #s_method_freeshipping_freeshipping'));
+		} catch (NoSuchElementException $exception) {
+			// already selected
+		}
 		$this->click(WebDriverBy::cssSelector('#shipping-method-buttons-container .button'));
 		$this->waitForElement(WebDriverBy::cssSelector('#payment-buttons-container .button'));
 	}
