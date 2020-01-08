@@ -1,2 +1,2 @@
 #!/bin/bash
-./vendor/bin/steward run staging chrome --group="woocommerce_full_test" -vv
+./vendor/bin/steward run staging chrome --group="magento_full_test" -vv

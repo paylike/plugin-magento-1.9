@@ -113,6 +113,8 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
             document.getElementById("transaction-id").value = String(Math.floor((Math.random() * 1000000000000) + 1));
         }
 
+
+        // this section is no longer use for now
         var paylikeoscOldPlaceOrder;
         jQuery(document).ready(function ($) {
             if (typeof window.oscPlaceOrder === 'function') {
@@ -143,10 +145,10 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         Review.prototype.oldSave = Review.prototype.save;
         Review.prototype.save = function () {
-            validatePaylike(1);
+            validatePaylike();
         }
 
-        var validatePaylike = function (checkoutExt, element) {
+        var validatePaylike = function (element) {
             if (jQuery("#p_method_paylike").is(":checked")) {
                 if (publicKey) {
                     var paylike = Paylike(publicKey);
@@ -189,10 +191,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                         }
                         document.getElementById("transaction-id").value = res.transaction.id.toString();
 
-                        if (checkoutExt == 1)
-                            review.oldSave();
-                        if (checkoutExt == 2)
-                            window.paylikeoscOldPlaceOrder(element);
+                        review.oldSave();
                     });
                 } else {
                     var message = '';
@@ -204,10 +203,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                     showError(message);
                 }
             } else {
-                if (checkoutExt == 1)
-                    review.oldSave();
-                if (checkoutExt == 2)
-                    window.paylikeoscOldPlaceOrder(element);
+                review.oldSave();
             }
         }
 

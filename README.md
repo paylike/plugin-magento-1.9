@@ -1,5 +1,7 @@
 # Magento plugin for Paylike [![Build Status](https://travis-ci.org/paylike/plugin-magento-1.9.svg?branch=master)](https://travis-ci.org/paylike/plugin-magento-1.9)
 
+**Magento 1.9.x is no longer receiving updates so for improved security and maintenance we encourage you to use 2.x. You can find the 2.x extension here: https://github.com/paylike/plugin-magento-2**
+
 This plugin is *not* developed or maintained by Paylike but kindly made
 available by the community.
 

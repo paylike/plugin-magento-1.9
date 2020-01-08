@@ -2,5 +2,6 @@
 .DS_Store
 vendor
 .env
+.env.production
 Paylike_Payment/var
 logs
