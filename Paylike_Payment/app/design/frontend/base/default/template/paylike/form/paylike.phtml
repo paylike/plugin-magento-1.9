@@ -38,9 +38,6 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 	</style>
 	<script type="text/javascript">
         document.getElementById('p_method_paylike').checked = false;
-
-
-
         var paylikeVAR = {
             tax: '<?php echo Mage::helper( 'checkout' )->getQuote()->getShippingAddress()->getData( 'tax_amount' ); ?>',
             telephone: '<?php echo $paylike_helper->getTelephone(); ?>',
@@ -67,7 +64,9 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         jQuery("input:radio").change(function () {
             if (!jQuery("#p_method_paylike").is(":checked")) {
-                clearError();
+                if (jQuery('#errorMessage').length > 0) {
+                    jQuery('#errorMessage').remove();
+                }
             }
         });
 
@@ -110,18 +109,10 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         function paylikePaymentSelectHandler() {
             //document.getElementById("transaction-id").value = "5910238566b6776329301fb9";
-            document.getElementById("paylike-transaction-id").removeAttribute("disabled");
-            document.getElementById("paylike-transaction-id").value = String(Math.floor((Math.random() * 1000000000000) + 1));
+            document.getElementById("transaction-id").removeAttribute("disabled");
+            document.getElementById("transaction-id").value = String(Math.floor((Math.random() * 1000000000000) + 1));
         }
 
-        var $method_paylike = jQuery('#dt_method_paylike').find('span.no-display');
-        if($method_paylike.length>0){
-	        document.getElementById('p_method_paylike').checked = true;
-	        setTimeout(function() {
-		        paylikePaymentSelectHandler()
-	        },100);
-        }
-        // this section is no longer use for now
         var paylikeoscOldPlaceOrder;
         jQuery(document).ready(function ($) {
             if (typeof window.oscPlaceOrder === 'function') {
@@ -152,14 +143,20 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         Review.prototype.oldSave = Review.prototype.save;
         Review.prototype.save = function () {
-            validatePaylike();
+            validatePaylike(1);
         }
 
-        var validatePaylike = function (element) {
+        var validatePaylike = function (checkoutExt, element) {
             if (jQuery("#p_method_paylike").is(":checked")) {
+                var checkoutAgreementsForm = new VarienForm('checkout-agreements');
+
+                if (!checkoutAgreementsForm.validator.validate()) {
+                    return;
+                }
+
                 if (publicKey) {
                     var paylike = Paylike(publicKey);
-                    document.getElementById("paylike-transaction-id").removeAttribute("disabled");
+                    document.getElementById("transaction-id").removeAttribute("disabled");
                     var args = {
                         title: popupTitle,
                         currency: currency,
@@ -196,9 +193,12 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                             }
                             return console.log(err);
                         }
-                        document.getElementById("paylike-transaction-id").value = res.transaction.id.toString();
+                        document.getElementById("transaction-id").value = res.transaction.id.toString();
 
-                        review.oldSave();
+                        if (checkoutExt == 1)
+                            review.oldSave();
+                        if (checkoutExt == 2)
+                            window.paylikeoscOldPlaceOrder(element);
                     });
                 } else {
                     var message = '';
@@ -210,12 +210,15 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                     showError(message);
                 }
             } else {
-                review.oldSave();
+                if (checkoutExt == 1)
+                    review.oldSave();
+                if (checkoutExt == 2)
+                    window.paylikeoscOldPlaceOrder(element);
             }
         }
 
 
 	</script>
-	<input type="hidden" id="paylike-transaction-id" name="payment[paylike_transaction_id]"/>
+	<input type="hidden" id="transaction-id" name="payment[paylike_transaction_id]"/>
 	<?php
 }
