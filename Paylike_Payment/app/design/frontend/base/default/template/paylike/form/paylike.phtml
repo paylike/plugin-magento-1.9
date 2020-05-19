@@ -9,34 +9,34 @@ $currency_code  = Mage::app()->getStore()->getCurrentCurrencyCode();
 $email          = $quote->getBillingAddress()->getEmail();
 $name           = $quote->getBillingAddress()->getName();
 if ( ! $email ) {
-	$email = $quote->getCustomerEmail();
+    $email = $quote->getCustomerEmail();
 }
 if ( ! $name ) {
-	$name = $quote->getCustomerName();
+    $name = $quote->getCustomerName();
 }
 if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
-	?>
-	<style type="text/css">
-		.paylike-logo {
-			width: 40px;
-			padding-right: 10px;
-		}
+    ?>
+    <style type="text/css">
+        .paylike-logo {
+            width: 40px;
+            padding-right: 10px;
+        }
 
-		label[for="p_method_paylike"] span {
-			float: left;
-			margin-right: 10px;
-			margin-top: 6px;
-		}
+        label[for="p_method_paylike"] span {
+            float: left;
+            margin-right: 10px;
+            margin-top: 6px;
+        }
 
-		label[for="p_method_paylike"] p {
-			clear: both;
-		}
+        label[for="p_method_paylike"] p {
+            clear: both;
+        }
 
-		label[for="p_method_paylike"] span ~ img {
-			margin-top: 5px;
-		}
-	</style>
-	<script type="text/javascript">
+        label[for="p_method_paylike"] span ~ img {
+            margin-top: 5px;
+        }
+    </style>
+    <script type="text/javascript">
         document.getElementById('p_method_paylike').checked = false;
 
 
@@ -116,10 +116,10 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         var $method_paylike = jQuery('#dt_method_paylike').find('span.no-display');
         if($method_paylike.length>0){
-	        document.getElementById('p_method_paylike').checked = true;
-	        setTimeout(function() {
-		        paylikePaymentSelectHandler()
-	        },100);
+            document.getElementById('p_method_paylike').checked = true;
+            setTimeout(function() {
+                paylikePaymentSelectHandler()
+            },100);
         }
         // this section is no longer use for now
         var paylikeoscOldPlaceOrder;
@@ -157,7 +157,13 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
         var validatePaylike = function (element) {
             if (jQuery("#p_method_paylike").is(":checked")) {
-                if (publicKey) {
+                    var checkoutAgreementsForm = new VarienForm('checkout-agreements');
+
+                    if (!checkoutAgreementsForm.validator.validate()) {
+                        return;
+                    }
+
+                    if (publicKey) {
                     var paylike = Paylike(publicKey);
                     document.getElementById("paylike-transaction-id").removeAttribute("disabled");
                     var args = {
@@ -215,7 +221,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
         }
 
 
-	</script>
-	<input type="hidden" id="paylike-transaction-id" name="payment[paylike_transaction_id]"/>
-	<?php
+    </script>
+    <input type="hidden" id="paylike-transaction-id" name="payment[paylike_transaction_id]"/>
+    <?php
 }

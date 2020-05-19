@@ -9,7 +9,7 @@
                     </text>
                 </action>
             </block>
-        </reference>        
+        </reference>
     </paylike_common_section>
     <checkout_onepage_index>
         <update handle="paylike_common_section"/>
@@ -17,11 +17,19 @@
     <onestepcheckout_index_index>
         <update handle="paylike_common_section"/>
     </onestepcheckout_index_index>
-    
+
     <onestepcheckout_payment_review_material_20columns>
         <reference name="review_info">
             <block type="core/template" name="paylike.updated.total.block" template="paylike/ajaxupdate.phtml"  />
         </reference>
     </onestepcheckout_payment_review_material_20columns>
-    
+
+    <checkout_onepage_review>
+        <reference name="checkout.onepage.agreements">
+            <action method="setTemplate">
+                <template>paylike/form/checkout/agreements/onepage.phtml</template>
+            </action>
+        </reference>
+    </checkout_onepage_review>
+
 </layout>
