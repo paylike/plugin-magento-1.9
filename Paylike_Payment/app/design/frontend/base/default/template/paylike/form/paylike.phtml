@@ -159,7 +159,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
             if (jQuery("#p_method_paylike").is(":checked")) {
                     var checkoutAgreementsForm = new VarienForm('checkout-agreements');
 
-                    if (!checkoutAgreementsForm.validator.validate()) {
+                    if (checkoutAgreementsForm.form && !checkoutAgreementsForm.validator.validate()) {
                         return;
                     }
 
