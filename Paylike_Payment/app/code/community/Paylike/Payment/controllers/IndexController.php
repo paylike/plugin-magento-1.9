@@ -163,17 +163,4 @@ class Paylike_Payment_IndexController extends Mage_Core_Controller_Front_Action 
 		}
 
 	}
-
-	/**
-	 * @throws Mage_Core_Model_Store_Exception
-	 */
-	public function getSiteNameAction() {
-		$pop_up_title = Mage::getStoreConfig( 'payment/paylike/pop_up_title' );
-		if ( $pop_up_title != '' ) {
-			echo $pop_up_title;
-		} else {
-			echo Mage::app()->getStore()->getFrontendName();
-		}
-	}
-
 }
