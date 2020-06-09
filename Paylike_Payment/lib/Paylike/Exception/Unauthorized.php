@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Exception;
-
 /**
  * Class Unauthorized
  *
  * @package Paylike\Exception
  */
-class Unauthorized extends ApiException
+class Paylike_Exception_Unauthorized extends Paylike_Exception_ApiException
 {
 
 }

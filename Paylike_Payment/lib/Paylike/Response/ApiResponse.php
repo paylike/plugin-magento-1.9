@@ -7,7 +7,7 @@ namespace Paylike\Response;
  *
  * @package Paylike
  */
-class ApiResponse
+class Paylike_Response_ApiResponse
 {
     public $headers;
     public $body;

@@ -1,16 +1,14 @@
 <?php
 
-namespace Paylike\Endpoint;
-
 /**
  * Class Endpoint
  *
  * @package Paylike\Endpoint
  */
-abstract class Endpoint
+abstract class Paylike_Endpoint_Endpoint
 {
     /**
-     * @var \Paylike\Paylike
+     * @var Paylike_Paylike
      */
     protected $paylike;
 

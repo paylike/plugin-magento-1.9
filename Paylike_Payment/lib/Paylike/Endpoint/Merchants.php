@@ -1,7 +1,5 @@
 <?php
 
-namespace Paylike\Endpoint;
-
 use Paylike\Utils\Cursor;
 
 /**
@@ -9,7 +7,7 @@ use Paylike\Utils\Cursor;
  *
  * @package Paylike\Endpoint
  */
-class Merchants extends Endpoint
+class Paylike_Endpoint_Merchants extends Paylike_Endpoint_Endpoint
 {
     /**
      * @link https://github.com/paylike/api-docs#create-a-merchant
@@ -73,7 +71,7 @@ class Merchants extends Endpoint
         }
         $api_response = $this->paylike->client->request('GET', $url, $args);
         $merchants = $api_response->json;
-        return new Cursor($url, $args, $merchants, $this->paylike);
+        return new Paylike_Utils_Cursor($url, $args, $merchants, $this->paylike);
     }
 
     /**
@@ -81,8 +79,8 @@ class Merchants extends Endpoint
      *
      * @param $app_id
      * @param $merchant_id
-     * @return Cursor
-     * @throws \Exception
+     * @return Paylike_Utils_Cursor
+     * @throws Exception
      */
     public function before($app_id, $merchant_id)
     {
@@ -94,8 +92,8 @@ class Merchants extends Endpoint
      *
      * @param $app_id
      * @param $merchant_id
-     * @return Cursor
-     * @throws \Exception
+     * @return Paylike_Utils_Cursor
+     * @throws Exception
      */
     public function after($app_id, $merchant_id)
     {

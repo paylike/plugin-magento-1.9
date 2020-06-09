@@ -1,15 +1,11 @@
 <?php
 
-namespace Paylike\Endpoint;
-
-use Paylike\Utils\Cursor;
-
 /**
  * Class Transactions
  *
  * @package Paylike\Endpoint
  */
-class Transactions extends Endpoint
+class Paylike_Endpoint_Transactions extends Paylike_Endpoint_Endpoint
 {
     /**
      * @link https://github.com/paylike/api-docs#create-a-transaction
@@ -100,8 +96,8 @@ class Transactions extends Endpoint
      *
      * @param $merchant_id
      * @param array $args
-     * @return Cursor
-     * @throws \Exception
+     * @return Paylike_Utils_Cursor
+     * @throws Exception
      */
     public function find($merchant_id, $args = array())
     {
@@ -111,7 +107,7 @@ class Transactions extends Endpoint
         }
         $api_response = $this->paylike->client->request('GET', $url, $args);
         $transactions = $api_response->json;
-        return new Cursor($url, $args, $transactions, $this->paylike);
+        return new Paylike_Utils_Cursor($url, $args, $transactions, $this->paylike);
     }
 
     /**
@@ -119,8 +115,8 @@ class Transactions extends Endpoint
      *
      * @param $merchant_id
      * @param $transaction_id
-     * @return Cursor
-     * @throws \Exception
+     * @return Paylike_Utils_Cursor
+     * @throws Exception
      */
     public function before($merchant_id, $transaction_id)
     {
@@ -132,8 +128,8 @@ class Transactions extends Endpoint
      *
      * @param $merchant_id
      * @param $transaction_id
-     * @return Cursor
-     * @throws \Exception
+     * @return Paylike_Utils_Cursor
+     * @throws Exception
      */
     public function after($merchant_id, $transaction_id)
     {

@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Exception;
-
 /**
  * Class NotFound
  *
  * @package Paylike\Exception
  */
-class NotFound extends ApiException
+class Paylike_Exception_NotFound extends Paylike_Exception_ApiException
 {
 
 }

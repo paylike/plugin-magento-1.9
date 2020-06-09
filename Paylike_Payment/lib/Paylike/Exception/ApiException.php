@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Exception;
-
 /**
  * Class ApiError
  *
  * @package Paylike\Exception
  */
-class ApiException extends \Exception
+class Paylike_Exception_ApiException extends Exception
 {
     public $http_status;
     public $http_body;

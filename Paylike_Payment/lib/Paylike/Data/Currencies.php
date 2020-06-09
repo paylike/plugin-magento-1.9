@@ -6,12 +6,8 @@
  * Time: 3:57 PM
  */
 
-namespace Paylike\Data;
-
-
-class Currencies {
-
-
+class Paylike_Data_Currencies
+{
 	/**
 	 * Currencies constructor.
 	 */

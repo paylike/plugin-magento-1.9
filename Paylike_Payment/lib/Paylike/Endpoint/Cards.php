@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Endpoint;
-
 /**
  * Class Cards
  *
  * @package Paylike\Endpoint
  */
-class Cards extends Endpoint
+class Paylike_Endpoint_Cards extends Paylike_Endpoint_Endpoint
 {
     /**
      * @link https://github.com/paylike/api-docs#save-a-card

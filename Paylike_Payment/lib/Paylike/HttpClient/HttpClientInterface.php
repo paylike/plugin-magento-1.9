@@ -1,8 +1,6 @@
 <?php
 
-namespace Paylike\HttpClient;
-
-interface HttpClientInterface
+interface Paylike_HttpClient_HttpClientInterface
 {
     /**
      * Performs the underlying HTTP request. It takes care of handling the
@@ -12,8 +10,8 @@ interface HttpClientInterface
      * @param  string $method    The API method to be called
      * @param  array  $args      Assoc array of parameters to be passed
      *
-     * @return \Paylike\Response\ApiResponse
-     * @throws \Paylike\Exception\ApiException
+     * @return Paylike_Response_ApiResponse
+     * @throws Paylike_Exception_ApiException
      */
     public function request($http_verb, $method, $args = array());
 }

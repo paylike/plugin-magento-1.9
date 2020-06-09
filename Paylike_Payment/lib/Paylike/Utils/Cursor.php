@@ -1,16 +1,11 @@
 <?php
 
-namespace Paylike\Utils;
-
-
-use Paylike\Paylike;
-
 /**
  * Class Cursor
  *
  * @package Paylike\Utils
  */
-class Cursor implements \Iterator, \Countable, \ArrayAccess
+class Paylike_Utils_Cursor implements Iterator, Countable, ArrayAccess
 {
 
     /**
@@ -28,7 +23,7 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
     private $params = array();
 
     /**
-     * @var Paylike
+     * @var Paylike_Paylike
      */
     private $paylike;
 
@@ -37,10 +32,10 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
      * @param $endpoint
      * @param array $params
      * @param array $data
-     * @param Paylike $paylike
-     * @throws \Exception
+     * @param Paylike_Paylike $paylike
+     * @throws Exception
      */
-    public function __construct($endpoint, array $params, array $data, Paylike $paylike)
+    public function __construct($endpoint, array $params, array $data, Paylike_Paylike $paylike)
     {
         $this->endpoint = $endpoint;
         $this->collection = $data;
@@ -270,7 +265,7 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
         if (isset($params['limit'])) {
             $limit = $params['limit'];
             if (!is_numeric($limit) || $limit <= 0) {
-                throw new \Exception('Limit is not valid. It has to be a numerical value (> 0)');
+                throw new Exception('Limit is not valid. It has to be a numerical value (> 0)');
             }
             $return['limit'] = $limit;
         }
@@ -278,7 +273,7 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
         if (isset($params['after'])) {
             $after = $params['after'];
             if (!is_string($after)) {
-                throw new \Exception('After is not valid. It has to be a string');
+                throw new Exception('After is not valid. It has to be a string');
             }
             $return['after'] = $after;
         }
@@ -286,7 +281,7 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
         if (isset($params['before'])) {
             $before = $params['before'];
             if (!is_string($before)) {
-                throw new \Exception('Before is not valid. It has to be a string');
+                throw new Exception('Before is not valid. It has to be a string');
             }
             $return['before'] = $before;
         }
@@ -294,17 +289,17 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess
         if (isset($params['filter'])) {
             $filter = $params['filter'];
             if (!is_array($filter)) {
-                throw new \Exception('Filter is not valid. It has to be an array');
+                throw new Exception('Filter is not valid. It has to be an array');
             }
             if (isset($filter['merchantId'])) {
                 if (!is_string($filter['merchantId'])) {
-                    throw new \Exception('Merchant filter is not valid. It has to be an string');
+                    throw new Exception('Merchant filter is not valid. It has to be an string');
                 }
                 $return['filter']['merchantId'] = $filter['merchantId'];
             }
             if (isset($filter['transactionId'])) {
                 if (!is_string($filter['transactionId'])) {
-                    throw new \Exception('Transaction filter is not valid. It has to be an string');
+                    throw new Exception('Transaction filter is not valid. It has to be an string');
                 }
                 $return['filter']['transactionId'] = $filter['transactionId'];
             }

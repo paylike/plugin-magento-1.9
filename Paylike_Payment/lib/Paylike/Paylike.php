@@ -1,20 +1,11 @@
 <?php
 
-namespace Paylike;
-
-use Paylike\HttpClient\HttpClientInterface;
-use Paylike\HttpClient\CurlClient;
-use Paylike\Endpoint\Apps;
-use Paylike\Endpoint\Merchants;
-use Paylike\Endpoint\Transactions;
-use Paylike\Endpoint\Cards;
-
 /**
  * Class Paylike
  *
  * @package Paylike
  */
-class Paylike
+class Paylike_Paylike
 {
     /**
      * @var string
@@ -22,7 +13,7 @@ class Paylike
     const BASE_URL = 'https://api.paylike.io';
 
     /**
-     * @var HttpClientInterface
+     * @var Paylike_HttpClient_HttpClientInterface
      */
     public $client;
 
@@ -36,14 +27,14 @@ class Paylike
      * Paylike constructor.
      *
      * @param                          $api_key
-     * @param HttpClientInterface $client
-     * @throws Exception\ApiException
+     * @param Paylike_HttpClient_HttpClientInterface $client
+     * @throws Paylike_Exception_ApiException
      */
-    public function __construct($api_key, HttpClientInterface $client = null)
+    public function __construct($api_key, Paylike_HttpClient_HttpClientInterface $client = null)
     {
         $this->api_key = $api_key;
         $this->client  = $client ? $client
-            : new CurlClient($this->api_key, self::BASE_URL);
+            : new Paylike_HttpClient_CurlClient($this->api_key, self::BASE_URL);
     }
 
     /**
@@ -56,34 +47,34 @@ class Paylike
 
 
     /**
-     * @return Apps
+     * @return Paylike_Endpoint_Apps
      */
     public function apps()
     {
-        return new Apps($this);
+        return new Paylike_Endpoint_Apps($this);
     }
 
     /**
-     * @return Merchants
+     * @return Paylike_Endpoint_Merchants
      */
     public function merchants()
     {
-        return new Merchants($this);
+        return new Paylike_Endpoint_Merchants($this);
     }
 
     /**
-     * @return Transactions
+     * @return Paylike_Endpoint_Transactions
      */
     public function transactions()
     {
-        return new Transactions($this);
+        return new Paylike_Endpoint_Transactions($this);
     }
 
     /**
-     * @return Cards
+     * @return Paylike_Endpoint_Cards
      */
     public function cards()
     {
-        return new Cards($this);
+        return new Paylike_Endpoint_Cards($this);
     }
 }

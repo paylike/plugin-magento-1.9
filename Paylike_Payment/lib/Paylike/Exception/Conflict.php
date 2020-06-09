@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Exception;
-
 /**
  * Class Conflict
  *
  * @package Paylike\Exception
  */
-class Conflict extends ApiException
+class Paylike_Exception_Conflict extends Paylike_Exception_ApiException
 {
 
 }

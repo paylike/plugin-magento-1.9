@@ -1,13 +1,11 @@
 <?php
 
-namespace Paylike\Exception;
-
 /**
  * Class InvalidRequest
  *
  * @package Paylike\Exception
  */
-class InvalidRequest extends ApiException
+class Paylike_Exception_InvalidRequest extends Paylike_Exception_ApiException
 {
 
 }

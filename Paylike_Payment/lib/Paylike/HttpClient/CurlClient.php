@@ -1,7 +1,5 @@
 <?php
 
-namespace Paylike\HttpClient;
-
 use Paylike\Exception\ApiConnection;
 use Paylike\Exception\ApiException;
 use Paylike\Exception\Conflict;
@@ -9,14 +7,13 @@ use Paylike\Exception\Forbidden;
 use Paylike\Exception\InvalidRequest;
 use Paylike\Exception\NotFound;
 use Paylike\Exception\Unauthorized;
-use Paylike\Response\ApiResponse;
 
 /**
  * Class CurlClient
  *
  * @package Paylike
  */
-class CurlClient implements HttpClientInterface
+class Paylike_HttpClient_CurlClient implements Paylike_HttpClient_HttpClientInterface
 {
     const TIMEOUT = 10;
 
@@ -30,7 +27,7 @@ class CurlClient implements HttpClientInterface
         if ( ! function_exists('curl_init')
             || ! function_exists('curl_setopt')
         ) {
-            throw new ApiException("cURL support is required, but can't be found.");
+            throw new Paylike_Exception_ApiException("cURL support is required, but can't be found.");
         }
 
         $this->api_key  = $api_key;
@@ -45,8 +42,8 @@ class CurlClient implements HttpClientInterface
      * @param  string $method    The API method to be called
      * @param  array  $args      Assoc array of parameters to be passed
      *
-     * @return ApiResponse
-     * @throws ApiException
+     * @return Paylike_Response_ApiResponse
+     * @throws Paylike_Exception_ApiException
      */
     public function request(
         $http_verb,
@@ -125,7 +122,7 @@ class CurlClient implements HttpClientInterface
         //
         $json         = $this->parseResponse($response_body, $response_code,
             $response_headers);
-        $api_response = new ApiResponse($response_body, $response_code,
+        $api_response = new Paylike_Response_ApiResponse($response_body, $response_code,
             $response_headers, $json);
 
         return $api_response;
@@ -137,7 +134,7 @@ class CurlClient implements HttpClientInterface
      * @param $response_headers
      *
      * @return mixed
-     * @throws ApiException
+     * @throws Paylike_Exception_ApiException
      */
     private function parseResponse(
         $response_body,
@@ -151,7 +148,7 @@ class CurlClient implements HttpClientInterface
             if ($resp === null && $jsonError !== JSON_ERROR_NONE) {
                 $msg = "Invalid response body: $response_body "
                     . "(HTTP response code: $response_code, json_last_error: $jsonError)";
-                throw new ApiException($msg, $response_code,
+                throw new Paylike_Exception_ApiException($msg, $response_code,
                     $response_body);
             }
         }
@@ -170,7 +167,7 @@ class CurlClient implements HttpClientInterface
      * @param $errno
      * @param $message
      *
-     * @throws ApiConnection
+     * @throws Paylike_Exception_ApiConnection
      */
     private function handleCurlError($url, $errno, $message)
     {
@@ -191,7 +188,7 @@ class CurlClient implements HttpClientInterface
         }
 
         $msg .= "\n\n(Network error [errno $errno]: $message)";
-        throw new ApiConnection($msg);
+        throw new Paylike_Exception_ApiConnection($msg);
     }
 
 
@@ -201,11 +198,11 @@ class CurlClient implements HttpClientInterface
      * @param $response_headers
      * @param $json_resp
      *
-     * @throws ApiException
-     * @throws Conflict
-     * @throws Forbidden
-     * @throws InvalidRequest
-     * @throws Unauthorized
+     * @throws Paylike_Exception_ApiException
+     * @throws Paylike_Exception_Conflict
+     * @throws Paylike_Exception_Forbidden
+     * @throws Paylike_Exception_InvalidRequest
+     * @throws Paylike_Exception_Unauthorized
      */
     private function handleApiError(
         $response_body,
@@ -228,31 +225,31 @@ class CurlClient implements HttpClientInterface
                         $message = $json_resp[0]['text'];
                     }
                 }
-                throw new InvalidRequest($message,
+                throw new Paylike_Exception_InvalidRequest($message,
                     $response_code, $response_body, $json_resp,
                     $response_headers);
             case 401:
-                throw new Unauthorized("You need to provide credentials (an app's API key).",
+                throw new Paylike_Exception_Unauthorized("You need to provide credentials (an app's API key).",
                     $response_code,
                     $response_body, $json_resp,
                     $response_headers);
             case 403:
-                throw new Forbidden("You are correctly authenticated but do not have access.",
+                throw new Paylike_Exception_Forbidden("You are correctly authenticated but do not have access.",
                     $response_code, $response_body,
                     $json_resp,
                     $response_headers);
             case 404:
-                throw new NotFound("Endpoint not found.",
+                throw new Paylike_Exception_NotFound("Endpoint not found.",
                     $response_code, $response_body,
                     $json_resp,
                     $response_headers);
             case 409:
-                throw new Conflict("Everything you submitted was fine at the time of validation, but something changed in the meantime and came into conflict with this (e.g. double-capture).",
+                throw new Paylike_Exception_Conflict("Everything you submitted was fine at the time of validation, but something changed in the meantime and came into conflict with this (e.g. double-capture).",
                     $response_code, $response_body,
                     $json_resp,
                     $response_headers);
             default:
-                throw new ApiException("Unknown api error",
+                throw new Paylike_Exception_ApiException("Unknown api error",
                     $response_code,
                     $response_body,
                     $json_resp,
