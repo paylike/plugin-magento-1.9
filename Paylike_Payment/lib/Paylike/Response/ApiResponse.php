@@ -1,7 +1,5 @@
 <?php
 
-namespace Paylike\Response;
-
 /**
  * Class ApiResponse
  *
