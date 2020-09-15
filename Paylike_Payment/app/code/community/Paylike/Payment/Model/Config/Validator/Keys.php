@@ -34,7 +34,6 @@ class Paylike_Payment_Model_Config_Validator_Keys
         } catch(Paylike_Exception_ApiException $exception ) {
             /** Mark the new value as invalid */
             $message = self::$mode === Paylike_Payment_Model_Source_PaymentMode::TEST_MODE_VALUE ? Mage::helper( 'paylike_payment' )->__("The test private key doesn't seem to be valid.") : Mage::helper( 'paylike_payment' )->__("The live private key doesn't seem to be valid.");
-            $message = Mage::getModel( 'paylike_payment/paylike' )->handleExceptions($exception, $message);
 
             Mage::throwException($message);
         }
@@ -49,7 +48,6 @@ class Paylike_Payment_Model_Config_Validator_Keys
         } catch (Paylike_Exception_ApiException $exception ) {
             // we handle in the following statement
             $message = self::$mode === Paylike_Payment_Model_Source_PaymentMode::TEST_MODE_VALUE ? Mage::helper( 'paylike_payment' )->__("The test private key is not valid or set to test mode.") : Mage::helper( 'paylike_payment' )->__("The live private key is not valid or set to test mode.");
-            $message = Mage::getModel('paylike_payment/paylike')->handleExceptions($exception, $message);
 
             Mage::throwException($message);
         }

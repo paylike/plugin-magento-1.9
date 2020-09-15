@@ -207,7 +207,7 @@
                             </label>
                             <comment>Get it from your Paylike dashboard</comment>
                             <frontend_type>text</frontend_type>
-                            <backend_model>paylike_payment/config_backend_testAppKey</backend_model>
+                            <backend_model>paylike_payment/config_backend_testApiKey</backend_model>
                             <sort_order>8</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -223,7 +223,7 @@
                             </label>
                             <comment>Get it from your Paylike dashboard</comment>
                             <frontend_type>text</frontend_type>
-                            <backend_model>paylike_payment/config_backend_testApiKey</backend_model>
+                            <backend_model>paylike_payment/config_backend_testAppKey</backend_model>
                             <sort_order>9</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -240,6 +240,7 @@
                             </label>
                             <comment>Get it from your Paylike dashboard</comment>
                             <frontend_type>text</frontend_type>
+                            <backend_model>paylike_payment/config_backend_liveApiKey</backend_model>
                             <sort_order>10</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -255,6 +256,7 @@
                             </label>
                             <comment>Get it from your Paylike dashboard</comment>
                             <frontend_type>text</frontend_type>
+                            <backend_model>paylike_payment/config_backend_liveAppKey</backend_model>
                             <sort_order>11</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
