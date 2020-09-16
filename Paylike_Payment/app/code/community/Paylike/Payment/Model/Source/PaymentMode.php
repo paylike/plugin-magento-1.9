@@ -1,15 +1,17 @@
 <?php
 
 class Paylike_Payment_Model_Source_PaymentMode {
+    const LIVE_MODE_VALUE = 'live';
+    const TEST_MODE_VALUE = 'test';
 
     public function toOptionArray() {
         return array(
             array(
-                'value' => 'test',
+                'value' => self::TEST_MODE_VALUE,
                 'label' => Mage::helper('paylike_payment')->__('Test')
             ),
             array(
-                'value' => 'live',
+                'value' => self::LIVE_MODE_VALUE,
                 'label' => Mage::helper('paylike_payment')->__('Live')
             ),
         );
