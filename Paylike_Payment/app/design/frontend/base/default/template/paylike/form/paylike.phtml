@@ -37,9 +37,11 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
         }
     </style>
     <script type="text/javascript">
+	    if (typeof Paylike == 'undefined') {
+			alert("Paylike API is not defined");
+        }
+
         document.getElementById('p_method_paylike').checked = false;
-
-
 
         var paylikeVAR = {
             tax: '<?php echo Mage::helper( 'checkout' )->getQuote()->getShippingAddress()->getData( 'tax_amount' ); ?>',
@@ -85,7 +87,6 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
             }
         }
 
-
         var payment_mode = '<?php echo $paylike_helper->getPaymentMode(); ?>';
         var locale = '<?php echo Mage::app()->getLocale()->getLocaleCode(); ?>';
         var popupTitle = '<?php echo $paylike_helper->getPopupTitle(); ?>';
@@ -95,7 +96,6 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
         var amount = '<?php echo $grand_total; ?>';
         var quoteId = '<?php echo $this->helper( 'checkout/cart' )->getQuote()->getId(); ?>';
         var products = '<?php echo $paylike_helper->getProducts( true ); ?>';
-
         var customerIp = '<?php echo Mage::helper( 'core/http' )->getRemoteAddr(); ?>';
         var platform_version = '<?php echo Mage::getVersion(); ?>';
         var version = '<?php echo Mage::getConfig()->getNode( 'modules/Paylike_Payment/version' ); ?>';
@@ -121,6 +121,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                 paylikePaymentSelectHandler()
             },100);
         }
+
         // this section is no longer use for now
         var paylikeoscOldPlaceOrder;
         jQuery(document).ready(function ($) {
@@ -146,24 +147,30 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
             }
         });
 
+        // fix bug in one page checkout and one step checkout
+        if (typeof review == 'undefined' || typeof review.oldSave == 'undefined') {
+            Review.prototype.oldSave = Review.prototype.save;
+        }
 
-        // fix bug in one page checkout
-
-
-        Review.prototype.oldSave = Review.prototype.save;
-        Review.prototype.save = function () {
-            validatePaylike();
+        Review.prototype.save = function() {
+          	if( typeof review == 'undefined' || typeof review.form == 'undefined') {
+                validatePaylike();
+          	} else {
+                if (new Validation(review.form).validate()) {
+                    validatePaylike();
+                }
+          	}
         }
 
         var validatePaylike = function (element) {
             if (jQuery("#p_method_paylike").is(":checked")) {
-                    var checkoutAgreementsForm = new VarienForm('checkout-agreements');
+                var checkoutAgreementsForm = new VarienForm('checkout-agreements');
 
-                    if (checkoutAgreementsForm.form && !checkoutAgreementsForm.validator.validate()) {
-                        return;
-                    }
+                if (checkoutAgreementsForm.form && !checkoutAgreementsForm.validator.validate()) {
+                    return;
+                }
 
-                    if (publicKey) {
+                if (publicKey) {
                     var paylike = Paylike(publicKey);
                     document.getElementById("paylike-transaction-id").removeAttribute("disabled");
                     var args = {
@@ -219,8 +226,6 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                 review.oldSave();
             }
         }
-
-
     </script>
     <input type="hidden" id="paylike-transaction-id" name="payment[paylike_transaction_id]"/>
     <?php
