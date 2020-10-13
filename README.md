@@ -13,7 +13,10 @@ You can also find information about the plugin here: https://paylike.io/plugins/
 
 [![Last succesfull test](https://log.derikon.ro/api/v1/log/read?tag=magento19&view=svg&label=Magento&key=ecommerce&background=d75f07)](https://log.derikon.ro/api/v1/log/read?tag=magento19&view=html)
 
-* The plugin has been tested with most versions of Magento at every iteration. We recommend using the latest version of Magento, but if that is not possible for some reason, test the plugin with your Magento version and it would probably function properly. 
+* The plugin has been tested with most versions of Magento at every iteration. We recommend using the latest version of Magento, but if that is not possible for some reason, test the plugin with your Magento version and it would probably function properly.
+
+## Third party modules compatibility
+1. FME_QuickCheckout
 
 ## Installation
 
