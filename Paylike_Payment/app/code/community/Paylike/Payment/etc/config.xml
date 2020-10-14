@@ -3,7 +3,7 @@
 <config>
     <modules>
         <Paylike_Payment>
-            <version>1.1.2</version>
+            <version>1.1.3</version>
         </Paylike_Payment>
     </modules>
 
