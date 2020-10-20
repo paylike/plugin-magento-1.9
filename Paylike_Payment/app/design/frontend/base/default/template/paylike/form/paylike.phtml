@@ -173,6 +173,24 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                 if (publicKey) {
                     var paylike = Paylike(publicKey);
                     document.getElementById("paylike-transaction-id").removeAttribute("disabled");
+
+                    if (!paylikeVAR.name || !paylikeVAR.name.trim()) {
+                      var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
+                      var mname = document.querySelector("input[name=\"billing[middlename]\"]").value;
+                      var lname = document.querySelector("input[name=\"billing[lastname]\"]").value;
+                      paylikeVAR.name = [fname, mname, lname].filter(function(n) {
+                        return !!n;
+                      }).join(" ");
+                    }
+
+                    if (!paylikeVAR.email || !paylikeVAR.email.trim()) {
+                        paylikeVAR.email = document.querySelector("input[name=\"billing[email]\"]").value;
+                    }
+
+                    if (!paylikeVAR.telephone || !paylikeVAR.telephone.trim()) {
+                        paylikeVAR.telephone = document.querySelector("input[name=\"billing[telephone]\"]").value;
+                    }
+
                     var args = {
                         title: popupTitle,
                         currency: currency,
