@@ -176,7 +176,13 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
                     if (!paylikeVAR.name || !paylikeVAR.name.trim()) {
                       var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
-                      var mname = document.querySelector("input[name=\"billing[middlename]\"]").value;
+
+                      var mname = null;
+                      var mnameInput = document.querySelector("input[name=\"billing[middlename]\"]");
+                      if (mnameInput) {
+                        mname = mnameInput.value;
+                      }
+
                       var lname = document.querySelector("input[name=\"billing[lastname]\"]").value;
                       paylikeVAR.name = [fname, mname, lname].filter(function(n) {
                         return !!n;
