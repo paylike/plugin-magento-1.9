@@ -54,6 +54,7 @@ class Paylike_Payment_Helper_Data extends Mage_Core_Helper_Abstract {
 			$name             = $product->getData( 'name' );
 			$products_array[] = array(
 				'ID'       => $product->getData( 'item_id' ),
+				'SKU'      => $product->getData( 'sku' ),
 				'Name'     => str_replace( "'", "&#39;", $name ),
 				'Quantity' => $product->getData( 'qty' )
 			);
