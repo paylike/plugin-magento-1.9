@@ -218,7 +218,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                     document.getElementById("paylike-transaction-id").removeAttribute("disabled");
 
                     if (!paylikeVAR.name || !paylikeVAR.name.trim()) {
-                      var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
+                       var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
 
                       var mname = null;
                       var mnameInput = document.querySelector("input[name=\"billing[middlename]\"]");
@@ -271,7 +271,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
                     PaylikeLogger.setContext(args);
 
-										PaylikeLogger.log("Opening paylike popup");
+                    PaylikeLogger.log("Opening paylike popup");
                     paylike.popup(args, function (err, res) {
                         if (err) {
                             if (err == 'closed') {
@@ -286,23 +286,23 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
                         PaylikeLogger.log("Saving order in magento system");
                         const oldOnSave = review.onSave;
-												const oldOnFail = checkout.ajaxFailure;
+                        const oldOnFail = checkout.ajaxFailure;
 
-												review.onSave = function(transport) {
+                        review.onSave = function(transport) {
                           const response = transport.responseJSON || transport.responseText.evalJSON(true) || {};
-													if (response.success || response.redirect) {
-														PaylikeLogger.log("Order successfully saved");
-													} else {
-														PaylikeLogger.log("Failed to save order - " + response.error);
-													}
+                          if (response.success || response.redirect) {
+                            PaylikeLogger.log("Order successfully saved");
+                          } else {
+                            PaylikeLogger.log("Failed to save order - " + response.error);
+                          }
 
-													oldOnSave(data);
-												}
+                          oldOnSave(data);
+                        }
 
-												checkout.ajaxFailure = function (data) {
-													PaylikeLogger.log("Failed to save order - ajax request failed");
-													oldOnFail(data);
-												};
+                        checkout.ajaxFailure = function (data) {
+                          PaylikeLogger.log("Failed to save order - ajax request failed");
+                          oldOnFail(data);
+                        };
 
                         review.oldSave();
                     });
