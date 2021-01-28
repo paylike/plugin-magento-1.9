@@ -320,6 +320,138 @@
                             <sort_order>40</sort_order>
                         </specificcountry>
 
+                        <logs_enabled translate="label">
+                            <label>Enable logs</label>
+                            <comment>
+                              <![CDATA[
+                                <style>
+                                  #paylike_buttons_container {
+                                    display: flex;
+                                    flex-direction: row;
+                                    width: 280px;
+                                    justify-content: space-between;
+                                    margin-top: 12px;
+                                  }
+
+                                  #paylike_logs_message {
+                                    margin-top: 8px;
+                                  }
+                                </style>
+                                <script type="text/javascript">
+                                  jQuery(document).ready(function () {
+                                    const logsEnabledSelector = jQuery("#payment_paylike_logs_enabled");
+                                    logsEnabledSelector.attr("disabled", true);
+                                    jQuery.ajax({
+                                      url: "../../../../../../../paylike/log/writtable",
+                                      success: function (data) {
+                                        const response = JSON.parse(data);
+                                        if (response.writable) {
+                                          jQuery("#not-writable").remove();
+                                          logsEnabledSelector.attr("disabled", false);
+                                        } else {
+                                          logsEnabledSelector.val("0");
+                                          logsEnabledSelector.attr("disabled", true);
+                                          logsEnabledSelector.after('<p id="not-writable" class="note" style="color: red; margin-top: 8px;">Cannot enable logs right now<br />Please make sure the following directory is writable:<br /><pre><small>'+response.dir+'</small></pre></p>');
+                                        }
+                                      },
+                                    });
+
+                                    logsEnabledSelector.after(`
+                                      <div id="paylike_buttons_container">
+                                        <button id="paylike_export_button" disabled>Export logs</button>
+                                        <button id="paylike_delete_button" disabled>Delete logs</button>
+                                      </div>
+                                      <p id="paylike_logs_message"></p>
+                                    `);
+
+                                    const exportButton = jQuery("#paylike_export_button");
+                                    const deleteButton = jQuery("#paylike_delete_button");
+                                    const message = jQuery("#paylike_logs_message");
+
+                                    function download(filename, content) {
+                                        var a = document.createElement('a');
+                                        a.setAttribute('href', 'data:application/zip;base64, ' + content);
+                                        a.setAttribute('download', filename);
+                                        a.click();
+                                    }
+
+                                    function checkForLogs() {
+                                      jQuery.ajax({
+                                        url: "/index.php/paylike/log/hasLogs",
+                                        type: 'POST',
+                                        dataType: 'text',
+                                        data: { "hasLogs": 1 },
+                                        success: function (data) {
+                                          if (!data) {
+                                            exportButton.attr("disabled", true);
+                                            deleteButton.attr("disabled", true);
+                                            message.html("No logs saved");
+                                          } else {
+                                            exportButton.attr("disabled", false);
+                                            deleteButton.attr("disabled", false);
+                                            message.html("");
+                                          }
+                                        }
+                                      });
+                                    }
+
+                                    checkForLogs();
+
+                                    deleteButton.on("click", (event) => {
+                                      event.preventDefault();
+
+                                      if (!confirm("Are you sure you want to delete the logs?")) {
+                                        return;
+                                      }
+
+                                      deleteButton.attr("disabled", true);
+                                      deleteButton.html("Loading...");
+
+                                      jQuery.ajax({
+                                        url: "/index.php/paylike/log/deleteLogs",
+                                        type: 'POST',
+                                        dataType: 'text',
+                                        data: { "delete": 1 },
+                                        success: function (data) {
+                                          message.html("Logs deleted");
+                                          deleteButton.html("Delete logs");
+
+                                          setTimeout(checkForLogs, 5000);
+                                        }
+                                      });
+                                    });
+
+                                    exportButton.on("click", (event) => {
+                                      event.preventDefault();
+
+                                      exportButton.attr("disabled", true);
+                                      exportButton.html("Loading...");
+
+                                      jQuery.ajax({
+                                        url: "/index.php/paylike/log/export",
+                                        type: 'POST',
+                                        dataType: 'text',
+                                        data: { "export": 1 },
+                                        success: function (data) {
+                                          download("paylikeLogs.zip", data);
+
+                                          exportButton.attr("disabled", false);
+                                          exportButton.html("Export logs");
+                                        }
+                                      });
+                                    });
+                                  });
+                                </script>
+                              ]]>
+                            </comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>paylike_payment/source_paymentLogsEnabled</source_model>
+                            <sort_order>41</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </logs_enabled>
+
                     </fields>
                 </paylike>
             </groups>
