@@ -37,6 +37,49 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
         }
     </style>
     <script type="text/javascript">
+      window.PaylikeLogger = {
+        setContext: function () {},
+        log: function() {},
+      };
+      <?php if ($paylike_helper->getLogsEnabled() == "1") { ?>
+        jQuery.ajax({
+          url: "/index.php/paylike/log/writtable",
+          success: function (data) {
+            const response = JSON.parse(data);
+            if (response.writable) {
+              window.PaylikeLogger = {
+                date: new Date().getTime(),
+                context: {},
+                setContext: function(context) {
+                  this.context = context;
+                },
+                log: function(message, data = {}) {
+                  const body = {
+                    message,
+                    data,
+                    date: this.date,
+                    context: this.context,
+                  }
+
+                  return new Promise(function (resolve) {
+                    new Ajax.Request("/index.php/paylike/log/log", {
+                      method:'post',
+                      parameters: {
+                        data: JSON.stringify(body),
+                      },
+                      onComplete: function () {
+                        resolve();
+                      },
+                    });
+                  });
+                }
+              }
+            }
+          },
+        });
+      <?php } ?>
+    </script>
+    <script type="text/javascript">
 	    if (typeof Paylike == 'undefined') {
 			alert("Paylike API is not defined");
         }
@@ -175,7 +218,7 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                     document.getElementById("paylike-transaction-id").removeAttribute("disabled");
 
                     if (!paylikeVAR.name || !paylikeVAR.name.trim()) {
-                      var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
+                       var fname = document.querySelector("input[name=\"billing[firstname]\"]").value;
 
                       var mname = null;
                       var mnameInput = document.querySelector("input[name=\"billing[middlename]\"]");
@@ -226,14 +269,40 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
                         };
                     }
 
+                    PaylikeLogger.setContext(args);
+
+                    PaylikeLogger.log("Opening paylike popup");
                     paylike.popup(args, function (err, res) {
                         if (err) {
                             if (err == 'closed') {
+                              PaylikeLogger.log("Paylike popup closed by user");
                                 //document.getElementById('p_method_paymentgateway').checked = false;
                             }
                             return console.log(err);
                         }
+
+                        PaylikeLogger.log("Paylike payment successfull. Transaction ID: " + res.transaction.id);
                         document.getElementById("paylike-transaction-id").value = res.transaction.id.toString();
+
+                        PaylikeLogger.log("Saving order in magento system");
+                        const oldOnSave = review.onSave;
+                        const oldOnFail = checkout.ajaxFailure;
+
+                        review.onSave = function(transport) {
+                          const response = transport.responseJSON || transport.responseText.evalJSON(true) || {};
+                          if (response.success || response.redirect) {
+                            PaylikeLogger.log("Order successfully saved");
+                          } else {
+                            PaylikeLogger.log("Failed to save order - " + response.error);
+                          }
+
+                          oldOnSave(data);
+                        }
+
+                        checkout.ajaxFailure = function (data) {
+                          PaylikeLogger.log("Failed to save order - ajax request failed");
+                          oldOnFail(data);
+                        };
 
                         review.oldSave();
                     });
