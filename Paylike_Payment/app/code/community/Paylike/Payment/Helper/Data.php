@@ -22,6 +22,10 @@ class Paylike_Payment_Helper_Data extends Mage_Core_Helper_Abstract {
 		return Mage::getStoreConfig( 'payment/paylike/pop_up_title' );
 	}
 
+	public function getLogsEnabled() {
+		return Mage::getStoreConfig("payment/paylike/logs_enabled");
+	}
+
 
 	/**
 	 * @return mixed
