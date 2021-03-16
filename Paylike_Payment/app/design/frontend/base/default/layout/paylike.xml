@@ -5,7 +5,7 @@
             <block type="core/text" name="paylike">
                 <action method="setText" ifconfig="payment/paylike/status">
                     <text>
-                        <![CDATA[<script type="text/javascript" src="//sdk.paylike.io/3.js"></script>]]>
+                        <![CDATA[<script type="text/javascript" src="//sdk.paylike.io/6.js"></script>]]>
                     </text>
                 </action>
             </block>
