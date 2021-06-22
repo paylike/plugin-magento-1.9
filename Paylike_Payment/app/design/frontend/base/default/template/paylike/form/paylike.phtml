@@ -290,13 +290,16 @@ if ( Mage::getStoreConfig( 'payment/paylike/status' ) ) {
 
                         review.onSave = function(transport) {
                           const response = transport.responseJSON || transport.responseText.evalJSON(true) || {};
+                          let message = "";
                           if (response.success || response.redirect) {
-                            PaylikeLogger.log("Order successfully saved");
+                            message = "Order successfully saved";
                           } else {
-                            PaylikeLogger.log("Failed to save order - " + response.error);
+                            message = "Failed to save order - " + response.error;
                           }
 
-                          oldOnSave(data);
+                          PaylikeLogger.log(message).then(() => {
+                            oldOnSave(transport);
+                          });
                         }
 
                         checkout.ajaxFailure = function (data) {
