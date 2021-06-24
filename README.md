@@ -58,3 +58,9 @@ Since version 1.0.6 we now support the magento standard UI for orders. In short 
 ### Void
 
 * In delayed mode, you can click void to void the payment if when this hasn't been captured, on the order interface screen.
+
+
+## Changelog
+
+#### 1.1.2:
+* Added compatibility with the Amasty Onestep Checkout plugin
