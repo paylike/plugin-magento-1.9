@@ -7,6 +7,8 @@ As you can see the plugin is bundled with Cypress testing on this repository. Yo
 ## Requirements
 
 * A framework/shop installation is required, in which you need to have the sample theme installed and products displayed on the homepage.
+* You need to disable CSRF protection System -> Configuration -> Advanced -> System (ADMIN_URL/system_config/edit/section/system)
+* Also appending the key to the url needs to be disabled (ADMIN_URL/system_config/edit/section/admin -> Security section).
 * You need to have Paylike module installed and configured (**test keys** required)
 * You need to have some other currencies configured in store, then set them in `cypress.env.json` file (these will be used to make payments with every currency specified)
 * You also need to have an account with previous purchases for which you set the credentials in the `cypress.env.json` file
