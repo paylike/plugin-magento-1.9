@@ -6,3 +6,5 @@ vendor
 Paylike_Payment/var
 !Paylike_Payment/var/connect/Paylike_Payment.xml
 logs
+node_modules
+cypress.env.json
