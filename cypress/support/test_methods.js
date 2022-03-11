@@ -91,19 +91,19 @@ export var TestMethods = {
         cy.goToPage(this.StoreUrl + '/checkout/onepage');
 
         /** Continue. */
-        cy.get('#billing-buttons-container > button', {timeout: 10000}).click();
-        cy.get('#s_method_flatrate_flatrate', {timeout: 10000}).click();
-        cy.get('#shipping-method-buttons-container > button', {timeout: 10000}).click();
+        cy.get('#billing-buttons-container > button').click();
+        cy.get('#s_method_flatrate_flatrate').click();
+        cy.get('#shipping-method-buttons-container > button').click();
 
 
         /** Choose Paylike. */
-        cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 10000}).click();
+        cy.get(`input[value*=${this.PaylikeName}]`).click();
 
         /** Continue. */
-        cy.get('#payment-buttons-container > button', {timeout: 10000}).click();
+        cy.get('#payment-buttons-container > button').click();
 
         /** Get amount. */
-        cy.get('strong > .price', {timeout: 10000}).then($grandTotal => {
+        cy.get('strong > .price').then($grandTotal => {
             var expectedAmount = PaylikeTestHelper.filterAndGetAmountInMinor($grandTotal, currency);
             cy.window().then($win => {
                 expect(expectedAmount).to.eq(Number($win.paylikeminoramount));
@@ -118,7 +118,7 @@ export var TestMethods = {
          */
          PaylikeTestHelper.fillAndSubmitPaylikePopup();
 
-        cy.get('.page-title > h1', {timeout: 10000}).should('contain', 'Your order has been received.');
+        cy.get('.page-title > h1').should('contain', 'Your order has been received.');
     },
 
     /**
@@ -164,7 +164,7 @@ export var TestMethods = {
             case 'refund':
                 /** Access invoices table by removing display:none from it. */
                 cy.get('#sales_order_view_tabs_order_invoices_content').invoke('show');
-                cy.get('#order_invoices_table tbody tr', {timeout: 10000}).first().click();
+                cy.get('#order_invoices_table tbody tr').first().click();
                 cy.get('button[onclick*="sales_order_creditmemo"]').first().click();
 
                 /** Keep partial amount to not be refunded. */
@@ -195,8 +195,15 @@ export var TestMethods = {
      * Change shop currency in frontend
      */
     changeShopCurrency(currency) {
-        // cy.selectOptionContaining('#select-currency', currency);
-        cy.get('#select-currency option').contains(currency).select();
+        /**
+         * Get first select (there are two selects with same ID in DOM)
+         * Get option value URL to switch with in page
+         */
+        cy.get('#select-currency').first().then($select => {
+            cy.window().then($win => {
+                $win.location.href = $select.find('option[value*="DKK"]').val();
+            });
+        });
     },
 
     /**
