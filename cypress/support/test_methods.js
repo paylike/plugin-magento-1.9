@@ -165,17 +165,8 @@ export var TestMethods = {
                 /** Access invoices table by removing display:none from it. */
                 cy.get('#sales_order_view_tabs_order_invoices_content').invoke('show');
                 cy.get('#order_invoices_table tbody tr').first().click();
+                /** Make credit memo. */
                 cy.get('button[onclick*="sales_order_creditmemo"]').first().click();
-
-                /** Keep partial amount to not be refunded. */
-                if (partialAmount) {
-                    /**
-                     * Put 2 major units to be subtracted from amount.
-                     * Premise: any product must have price >= 2.
-                     * *** Press enter after changing input to activate update button
-                     */
-                    cy.get('input[name="creditmemo[adjustment_negative]"]').clear().type(`${2}{enter}`);
-                }
                 /** Submit. */
                 cy.get('button[onclick*="submitCreditMemo\("]').click();
                 break;
@@ -201,7 +192,7 @@ export var TestMethods = {
          */
         cy.get('#select-currency').first().then($select => {
             cy.window().then($win => {
-                $win.location.href = $select.find('option[value*="DKK"]').val();
+                $win.location.href = $select.find(`option[value*=${currency}]`).val();
             });
         });
     },
