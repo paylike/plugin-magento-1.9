@@ -9,9 +9,7 @@ describe('paylike plugin quick test', () => {
      * Login into admin and frontend to store cookies.
      */
     before(() => {
-        cy.goToPage(TestMethods.StoreUrl + '/customer/account/login');
         TestMethods.loginIntoClientAccount();
-        cy.goToPage(Cypress.env('ENV_ADMIN_URL'));
         TestMethods.loginIntoAdminBackend();
     });
 
@@ -36,9 +34,6 @@ describe('paylike plugin quick test', () => {
     it('modify Paylike settings for capture mode', () => {
         TestMethods.changePaylikeCaptureMode(captureMode);
     });
-
-    /** Change store currency. */
-    TestMethods.changeShopCurrencyFromAdmin(currency);
 
     /** Pay and process order. */
     /** Capture */
