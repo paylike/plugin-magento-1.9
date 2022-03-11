@@ -12,23 +12,24 @@ export var TestMethods = {
     RemoteVersionLogUrl: Cypress.env('REMOTE_LOG_URL'),
 
     /** Construct some variables to be used bellow. */
-    ShopName: 'magento2',
+    ShopName: 'magento19',
     PaylikeName: 'paylike',
-    PaymentMethodsAdminUrl: '/admin/system_config/edit/section/payment/',
-    OrdersPageAdminUrl: '/sales/order/',
-    ConfigCurrencyAdminUrl: '/admin/system_config/edit/section/currency/#currency_options-link',
+    PaymentMethodsAdminUrl: '/system_config/edit/section/payment/',
+    OrdersPageAdminUrl: '/sales_order',
+    ConfigCurrencyAdminUrl: '/system_config/edit/section/currency/#currency_options-link',
 
     /**
      * Login to admin backend account
      */
     loginIntoAdminBackend() {
+        cy.goToPage(this.AdminUrl);
         cy.loginIntoAccount('input[name="login[username]"]', 'input[name="login[password]"]', 'admin');
-        // cy.wait(5000);
     },
     /**
      * Login to client|user frontend account
      */
     loginIntoClientAccount() {
+        cy.goToPage(this.StoreUrl + '/customer/account/login');
         cy.loginIntoAccount('input[name="login[username]"]', 'input[name="login[password]"]', 'client');
     },
 
@@ -40,18 +41,13 @@ export var TestMethods = {
         /** Go to Paylike payment method. */
         cy.goToPage(this.PaymentMethodsAdminUrl);
 
-        /** Check if Paylike section is not visible then click. */
-        cy.get('#row_payment_us_paylikepaymentmethod a').then(($paymentMethodRow) => {
-            if(!$paymentMethodRow.hasClass('open')) {
-                $paymentMethodRow.trigger('click');
-            }
-        });
+        PaylikeTestHelper.setPositionRelativeOn('.content-header-floating');
 
         /** Select capture mode. */
-        cy.selectOptionContaining('#payment_us_paylikepaymentmethod_capture_mode', captureMode)
+        cy.get('#payment_paylike_payment_action').select(captureMode);
 
         /** Save. */
-        cy.get('button[id=save]').click();
+        cy.get('.scalable.save').first().click();
     },
 
     /**
@@ -78,54 +74,73 @@ export var TestMethods = {
      * @param {String} currency
      */
     makePaymentFromFrontend(currency) {
-        /** Clear local storage to show currency change. */
-        cy.clearLocalStorage();
+        // /** Clear local storage to show currency change. */
+        // cy.clearLocalStorage();
         /**
          * Go to specific product page.
          */
-        cy.goToPage(this.StoreUrl + '/fusion-backpack.html', {timeout: 20000});
+        // cy.goToPage(this.StoreUrl, {timeout: 20000});
+        // cy.goToPage(this.StoreUrl + '/elizabeth-knit-top-596.html', {timeout: 20000});
+        cy.goToPage(this.StoreUrl + '/elizabeth-knit-top-596.html');
 
         // this.changeShopCurrency(currency);
 
-        cy.get('#product-addtocart-button', {timeout: 20000}).click();
+        // var randomInt = PaylikeTestHelper.getRandomInt(/*max*/ 4);
+        // cy.get('.products-grid .item.last li > a', {timeout: 20000}).eq(randomInt).click();
 
-        /** Go to shipping step. */
-        cy.goToPage(this.StoreUrl + '/checkout');
+        /** Show selects for attribute and choose first option. */
+        // cy.get('.required-entry.super-attribute-select').first().invoke('show');
+        // cy.get('.required-entry.super-attribute-select').last().invoke('show');
 
-        /** Go next. */
-        cy.get('.button > span', {timeout: 40000}).click();
+        // cy.wait(5000);
+        // cy.get('.required-entry.super-attribute-select').first().select(1);
+        // cy.get('.required-entry.super-attribute-select').last().select(1);
+        cy.get('#swatch21 > .swatch-label > img').click();
+        cy.get('#swatch80 > .swatch-label').click();
+
+
+
+
+        /** Add to cart. */
+        cy.get('.add-to-cart-buttons .button.btn-cart').click();
+
+
+        /** Go to onepage checkout. */
+        cy.goToPage(this.StoreUrl + '/checkout/onepage');
+
+        /** Continue. */
+        cy.get('#billing-buttons-container > button', {timeout: 20000}).click();
+        cy.get('#s_method_flatrate_flatrate', {timeout: 20000}).click();
+        cy.get('#shipping-method-buttons-container > button', {timeout: 20000}).click();
+        // cy.get('#billing-buttons-container > button', {timeout: 6000}).click();
+        // cy.get('#shipping-method-buttons-container > button', {timeout: 6000}).click();
+
 
         /** Choose Paylike. */
-        cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 30000}).click();
+        cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 20000}).click();
+        // cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 6000}).click();
+
+        /** Continue. */
+        cy.get('#payment-buttons-container > button', {timeout: 20000}).click();
 
         /** Get amount. */
-        cy.get('td[data-th="Order Total"] > strong > span.price').then($grandTotal => {
+        cy.get('strong > .price', {timeout: 20000}).then($grandTotal => {
             var expectedAmount = PaylikeTestHelper.filterAndGetAmountInMinor($grandTotal, currency);
-            cy.wrap(expectedAmount).as('expectedAmount');
+            // cy.wrap(expectedAmount).as('expectedAmount');
+            cy.window().then($win => {
+                expect(expectedAmount).to.eq(Number($win.paylikeminoramount));
+            });
         });
 
         /** Show paylike popup. */
-        cy.get(':nth-child(5) > div.primary > .action').click();
-
-
-        /**
-         * Check amount.
-         * We check here because "window.checkoutConfig.config.amount.value"
-         * is not present every moment we need it.
-         */
-        cy.get('@expectedAmount').then(expectedAmount => {
-            cy.get('.paylike .payment .amount').then(paylikeTextAmount => {
-                var paylikeAmount = PaylikeTestHelper.filterAndGetAmountInMinor(paylikeTextAmount, currency);
-                expect(expectedAmount).to.eq(paylikeAmount);
-            });
-        });
+        cy.get('#review-buttons-container > button').click();
 
         /**
          * Fill in Paylike popup.
          */
          PaylikeTestHelper.fillAndSubmitPaylikePopup();
 
-        cy.get('h1 > span.base', {timeout: 20000}).should('contain', 'Thank you for your purchase!');
+        cy.get('.page-title > h1', {timeout: 20000}).should('contain', 'Your order has been received.');
     },
 
     /**
@@ -137,26 +152,34 @@ export var TestMethods = {
         /** Go to admin orders page. */
         cy.goToPage(this.OrdersPageAdminUrl);
 
-        /** Wait to load orders. */
-        cy.wait(5000);
+        // PaylikeTestHelper.setPositionRelativeOn('.content-header-floating');
 
-        /** Remove spinner elements from dom. */
-        cy.get('div.sticky-header').then(($stickyHeader) => {
-            $stickyHeader.remove();
-        });
-        cy.get('div[data-role="spinner"]').then(($spinner) => {
-            $spinner.remove();
+        /** Remove fixed header. */
+        cy.get('.content-header-floating').then(($fixedHeader) => {
+            $fixedHeader.remove();
         });
 
-        /** Set position relative on toolbars. */
-        PaylikeTestHelper.setPositionRelativeOn('header.page-header.row');
-        PaylikeTestHelper.setPositionRelativeOn('tr[data-bind="foreach: {data: getVisible(), as: \'$col\'}"]');
-        PaylikeTestHelper.setPositionRelativeOn('.admin__data-grid-header');
-        PaylikeTestHelper.setPositionRelativeOn('.page-main-actions');
-        PaylikeTestHelper.setPositionRelativeOn('div[data-ui-id="page-actions-toolbar-content-header"]');
+        // /** Wait to load orders. */
+        // cy.wait(5000);
+
+        // /** Remove spinner elements from dom. */
+        // cy.get('div.sticky-header').then(($stickyHeader) => {
+        //     $stickyHeader.remove();
+        // });
+        // cy.get('div[data-role="spinner"]').then(($spinner) => {
+        //     $spinner.remove();
+        // });
+
+        // /** Set position relative on toolbars. */
+        // PaylikeTestHelper.setPositionRelativeOn('header.page-header.row');
+        // PaylikeTestHelper.setPositionRelativeOn('tr[data-bind="foreach: {data: getVisible(), as: \'$col\'}"]');
+        // PaylikeTestHelper.setPositionRelativeOn('.admin__data-grid-header');
+        // PaylikeTestHelper.setPositionRelativeOn('.page-main-actions');
+        // PaylikeTestHelper.setPositionRelativeOn('div[data-ui-id="page-actions-toolbar-content-header"]');
 
         /** Click on first (latest in time) order from orders table. */
-        cy.get('tr.data-row', {timeout: 30000}).first().click();
+        // cy.get('#sales_order_grid_table > tbody > tr', {timeout: 30000}).first().click();
+        cy.get('#sales_order_grid_table > tbody > tr', {timeout: 6000}).first().click();
 
         /**
          * Take specific action on order
@@ -170,69 +193,53 @@ export var TestMethods = {
      * @param {Boolean} partialAmount
      */
      paylikeActionOnOrderAmount(paylikeAction, partialAmount = false) {
+
+        /** Remove fixed header. */
+        cy.get('.content-header-floating').then(($fixedHeader) => {
+            $fixedHeader.remove();
+        });
+
         switch (paylikeAction) {
             case 'capture':
-                cy.get('#order_invoice').click();
-                cy.get('select[name="invoice[capture_case]"]').select('online');
-                cy.get('button[data-ui-id="order-items-submit-button"]').click();
+                cy.get('button[onclick*="sales_order_invoice"]').click();
+                cy.get('button.scalable.save.submit-button').click();
                 break;
             case 'refund':
-                    /** The following line not work always. */
-                    // cy.get('#sales_order_view_tabs_order_invoices').click();
                 /** Access invoices table by removing display:none from it. */
-                cy.removeDisplayNoneFrom('#sales_order_view_tabs_order_invoices_content');
-                /** Wait for invoices table to be displayed. */
-                cy.get('tr.data-row', {timeout: 30000}).first().click();
-                cy.get('#credit-memo', {timeout: 20000}).click();
+                cy.get('#sales_order_view_tabs_order_invoices_content').invoke('show');
+                cy.get('#order_invoices_table tbody tr', {timeout: 30000}).first().click();
+                cy.get('button[onclick*="sales_order_creditmemo"]').first().click();
+
                 /** Keep partial amount. */
                 if (partialAmount) {
                     /**
-                     * Put 8 major units to be subtracted from amount.
-                     * Premise: any product must have price >= 8.
+                     * Put 2 major units to be subtracted from amount.
+                     * Premise: any product must have price >= 2.
                      * *** Press enter after changing input to activate update button
                      */
-                    cy.get('input[name="creditmemo[adjustment_negative]"]').clear().type(`${8}{enter}`);
-                    cy.get('button[data-ui-id="update-totals-button"]').click();
-                    /** Wait for Refund button to be re-attach to the DOM. */
-                    cy.wait(2000);
+                    cy.get('input[name="creditmemo[adjustment_negative]"]').clear().type(`${2}{enter}`);
                 }
                 /** Submit. */
-                cy.get('button[data-ui-id="order-items-submit-button"]').click();
+                cy.get('button[onclick*="submitCreditMemo\("]').click();
                 break;
             case 'void':
-                cy.get('#void_payment').click();
-                cy.get('button.action-primary.action-accept').should('be.visible').click();
+                cy.get('button[onclick*="voidPayment"]').click();
+                cy.on('window:alert',($alert)=>{
+                    expect($alert).to.contains('Are you sure you want to void the payment?');
+                 });
                 break;
         }
 
         /** Check if success message. */
-        cy.get('div[data-ui-id="messages-message-success"]', {timeout: 20000}).should('be.visible');
+        // cy.get('#messages .success-msg', {timeout: 20000}).should('be.visible');
+        cy.get('#messages .success-msg', {timeout: 6000}).should('be.visible');
     },
 
     /**
      * Change shop currency in frontend
      */
     changeShopCurrency(currency) {
-        // cy.get('#switcher-currency-trigger').then($actualCurrency => {
-        //     /** Check if currency is not already selected, then select it. */
-        //     if (!$actualCurrency.text().includes(currency)) {
-        //         Cypress.$('#switcher-currency ul').attr('style', 'display: block;');
-        //         cy.get(`#switcher-currency li.currency-${currency} a`).click();
-        //     }
-        // });
-    },
-
-    /**
-     * Change shop currency from admin
-     */
-    changeShopCurrencyFromAdmin(currency) {
-        it('Change store currency from admin panel', () => {
-            cy.goToPage(this.ConfigCurrencyAdminUrl);
-            cy.get('#currency_options_default').select(currency);
-            cy.get('button[data-ui-id="page-actions-toolbar-save-button"]').click();
-            // cy.goToPage('/admin/cache');
-            // cy.get('#flush_magento').click();
-        });
+        cy.selectOptionContaining('#select-currency', currency);
     },
 
     /**
@@ -240,34 +247,36 @@ export var TestMethods = {
      */
     logVersions() {
         /** Go to payment methods page. */
-        cy.goToPage(this.PaymentMethodsAdminUrl);
+        cy.goToPage(this.StoreUrl + '/downloader');
+
+        cy.loginIntoAccount('input[name="username"]', 'input[name="password"]', 'admin');
 
         /** Get framework version. */
-        cy.get('p.magento-version').then($footerVersion => {
-            var footerVersion = ($footerVersion.text()).replace('Magento', '');
-            var frameworkVersion = footerVersion.replace('ver. ', '');
+        cy.get('#connect_packages_0 table tbody tr .a-center').first().then($frameworkVersion => {
+            var frameworkVersion = ($frameworkVersion.text()).replace(/[^0-9.]/g, '');
             cy.wrap(frameworkVersion).as('frameworkVersion');
         });
 
         /** Get Paylike version. */
-        cy.get('.paylike-version').invoke('attr', 'class').then($pluginVersion => {
-            var $pluginVersion = ($pluginVersion).replace(/[^0-9.]/g, '');
-            cy.wrap($pluginVersion).as('pluginVersion');
+        cy.get('#connect_packages_0 table tr td').contains('Paylike_Payment').parent().then($pluginVersion => {
+            var pluginVersion = ($pluginVersion.text()).replace(/[^0-9.]/g, '');
+            cy.wrap(pluginVersion).as('pluginVersion');
         });
+
 
         /** Get global variables and make log data request to remote url. */
         cy.get('@frameworkVersion').then(frameworkVersion => {
             cy.get('@pluginVersion').then(pluginVersion => {
 
-                cy.request('GET', this.RemoteVersionLogUrl, {
-                    key: frameworkVersion,
-                    tag: this.ShopName,
-                    view: 'html',
-                    ecommerce: frameworkVersion,
-                    plugin: pluginVersion
-                }).then((resp) => {
-                    expect(resp.status).to.eq(200);
-                });
+                // cy.request('GET', this.RemoteVersionLogUrl, {
+                //     key: frameworkVersion,
+                //     tag: this.ShopName,
+                //     view: 'html',
+                //     ecommerce: frameworkVersion,
+                //     plugin: pluginVersion
+                // }).then((resp) => {
+                //     expect(resp.status).to.eq(200);
+                // });
             });
         });
     },
