@@ -74,59 +74,37 @@ export var TestMethods = {
      * @param {String} currency
      */
     makePaymentFromFrontend(currency) {
-        // /** Clear local storage to show currency change. */
-        // cy.clearLocalStorage();
         /**
          * Go to specific product page.
          */
-        // cy.goToPage(this.StoreUrl, {timeout: 20000});
-        // cy.goToPage(this.StoreUrl + '/elizabeth-knit-top-596.html', {timeout: 20000});
         cy.goToPage(this.StoreUrl + '/elizabeth-knit-top-596.html');
 
-        // this.changeShopCurrency(currency);
+        this.changeShopCurrency(currency);
 
-        // var randomInt = PaylikeTestHelper.getRandomInt(/*max*/ 4);
-        // cy.get('.products-grid .item.last li > a', {timeout: 20000}).eq(randomInt).click();
-
-        /** Show selects for attribute and choose first option. */
-        // cy.get('.required-entry.super-attribute-select').first().invoke('show');
-        // cy.get('.required-entry.super-attribute-select').last().invoke('show');
-
-        // cy.wait(5000);
-        // cy.get('.required-entry.super-attribute-select').first().select(1);
-        // cy.get('.required-entry.super-attribute-select').last().select(1);
         cy.get('#swatch21 > .swatch-label > img').click();
         cy.get('#swatch80 > .swatch-label').click();
 
-
-
-
         /** Add to cart. */
         cy.get('.add-to-cart-buttons .button.btn-cart').click();
-
 
         /** Go to onepage checkout. */
         cy.goToPage(this.StoreUrl + '/checkout/onepage');
 
         /** Continue. */
-        cy.get('#billing-buttons-container > button', {timeout: 20000}).click();
-        cy.get('#s_method_flatrate_flatrate', {timeout: 20000}).click();
-        cy.get('#shipping-method-buttons-container > button', {timeout: 20000}).click();
-        // cy.get('#billing-buttons-container > button', {timeout: 6000}).click();
-        // cy.get('#shipping-method-buttons-container > button', {timeout: 6000}).click();
+        cy.get('#billing-buttons-container > button', {timeout: 10000}).click();
+        cy.get('#s_method_flatrate_flatrate', {timeout: 10000}).click();
+        cy.get('#shipping-method-buttons-container > button', {timeout: 10000}).click();
 
 
         /** Choose Paylike. */
-        cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 20000}).click();
-        // cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 6000}).click();
+        cy.get(`input[value*=${this.PaylikeName}]`, {timeout: 10000}).click();
 
         /** Continue. */
-        cy.get('#payment-buttons-container > button', {timeout: 20000}).click();
+        cy.get('#payment-buttons-container > button', {timeout: 10000}).click();
 
         /** Get amount. */
-        cy.get('strong > .price', {timeout: 20000}).then($grandTotal => {
+        cy.get('strong > .price', {timeout: 10000}).then($grandTotal => {
             var expectedAmount = PaylikeTestHelper.filterAndGetAmountInMinor($grandTotal, currency);
-            // cy.wrap(expectedAmount).as('expectedAmount');
             cy.window().then($win => {
                 expect(expectedAmount).to.eq(Number($win.paylikeminoramount));
             });
@@ -140,7 +118,7 @@ export var TestMethods = {
          */
          PaylikeTestHelper.fillAndSubmitPaylikePopup();
 
-        cy.get('.page-title > h1', {timeout: 20000}).should('contain', 'Your order has been received.');
+        cy.get('.page-title > h1', {timeout: 10000}).should('contain', 'Your order has been received.');
     },
 
     /**
@@ -152,34 +130,13 @@ export var TestMethods = {
         /** Go to admin orders page. */
         cy.goToPage(this.OrdersPageAdminUrl);
 
-        // PaylikeTestHelper.setPositionRelativeOn('.content-header-floating');
-
         /** Remove fixed header. */
         cy.get('.content-header-floating').then(($fixedHeader) => {
             $fixedHeader.remove();
         });
 
-        // /** Wait to load orders. */
-        // cy.wait(5000);
-
-        // /** Remove spinner elements from dom. */
-        // cy.get('div.sticky-header').then(($stickyHeader) => {
-        //     $stickyHeader.remove();
-        // });
-        // cy.get('div[data-role="spinner"]').then(($spinner) => {
-        //     $spinner.remove();
-        // });
-
-        // /** Set position relative on toolbars. */
-        // PaylikeTestHelper.setPositionRelativeOn('header.page-header.row');
-        // PaylikeTestHelper.setPositionRelativeOn('tr[data-bind="foreach: {data: getVisible(), as: \'$col\'}"]');
-        // PaylikeTestHelper.setPositionRelativeOn('.admin__data-grid-header');
-        // PaylikeTestHelper.setPositionRelativeOn('.page-main-actions');
-        // PaylikeTestHelper.setPositionRelativeOn('div[data-ui-id="page-actions-toolbar-content-header"]');
-
         /** Click on first (latest in time) order from orders table. */
-        // cy.get('#sales_order_grid_table > tbody > tr', {timeout: 30000}).first().click();
-        cy.get('#sales_order_grid_table > tbody > tr', {timeout: 6000}).first().click();
+        cy.get('#sales_order_grid_table > tbody > tr').first().click();
 
         /**
          * Take specific action on order
@@ -207,10 +164,10 @@ export var TestMethods = {
             case 'refund':
                 /** Access invoices table by removing display:none from it. */
                 cy.get('#sales_order_view_tabs_order_invoices_content').invoke('show');
-                cy.get('#order_invoices_table tbody tr', {timeout: 30000}).first().click();
+                cy.get('#order_invoices_table tbody tr', {timeout: 10000}).first().click();
                 cy.get('button[onclick*="sales_order_creditmemo"]').first().click();
 
-                /** Keep partial amount. */
+                /** Keep partial amount to not be refunded. */
                 if (partialAmount) {
                     /**
                      * Put 2 major units to be subtracted from amount.
@@ -231,15 +188,15 @@ export var TestMethods = {
         }
 
         /** Check if success message. */
-        // cy.get('#messages .success-msg', {timeout: 20000}).should('be.visible');
-        cy.get('#messages .success-msg', {timeout: 6000}).should('be.visible');
+        cy.get('#messages .success-msg').should('be.visible');
     },
 
     /**
      * Change shop currency in frontend
      */
     changeShopCurrency(currency) {
-        cy.selectOptionContaining('#select-currency', currency);
+        // cy.selectOptionContaining('#select-currency', currency);
+        cy.get('#select-currency option').contains(currency).select();
     },
 
     /**
@@ -268,15 +225,15 @@ export var TestMethods = {
         cy.get('@frameworkVersion').then(frameworkVersion => {
             cy.get('@pluginVersion').then(pluginVersion => {
 
-                // cy.request('GET', this.RemoteVersionLogUrl, {
-                //     key: frameworkVersion,
-                //     tag: this.ShopName,
-                //     view: 'html',
-                //     ecommerce: frameworkVersion,
-                //     plugin: pluginVersion
-                // }).then((resp) => {
-                //     expect(resp.status).to.eq(200);
-                // });
+                cy.request('GET', this.RemoteVersionLogUrl, {
+                    key: frameworkVersion,
+                    tag: this.ShopName,
+                    view: 'html',
+                    ecommerce: frameworkVersion,
+                    plugin: pluginVersion
+                }).then((resp) => {
+                    expect(resp.status).to.eq(200);
+                });
             });
         });
     },
