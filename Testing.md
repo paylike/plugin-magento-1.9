@@ -1,29 +1,53 @@
-#Testing
+#Testing with Cypress
 
-As you can see the plugin is bundled with selenium testing on this repository. You can use the tests, if you have some experience with testing it could be helpful. 
-*DO NOT USE IN PRODUCTION, THE TESTS MANIPULATE ORDERS*
+As you can see the plugin is bundled with Cypress testing on this repository. You can use the tests, if you have some experience with testing.
+
+***DO NOT USE IN PRODUCTION, THE TESTS MODIFY SETTINGS AND CREATE ORDERS***
 
 ## Requirements
 
-* A magento 1.9 installation is required, in which you need to have the luma theme installed with sample data. 
-* You need to disable csrf protection from the advanced config section of the plugin admin. Also appending the key to the url needs to be disabled.
-* You need a customer and admin login with the same password. The billing info for the customer should already be filled in. Just manually create an order first with an user. 
+* A framework/shop installation is required, in which you need to have the sample theme installed and products displayed on the homepage.
+* You need to disable CSRF protection System -> Configuration -> Advanced -> System (ADMIN_URL/system_config/edit/section/system)
+* Also appending the key to the url needs to be disabled (ADMIN_URL/system_config/edit/section/admin -> Security section).
+* You need to have Paylike module installed and configured (**test keys** required)
+* You need to have some other currencies configured in store, then set them in `cypress.env.json` file (these will be used to make payments with every currency specified)
+* You also need to have an account with previous purchases for which you set the credentials in the `cypress.env.json` file
+* *For testing purpose, product stock management and sending order emails need to be disabled (if applicable).*
 
 ## Getting started
 
-1. Follow 1 and 2 from the [Steward readme page](https://github.com/lmc-eu/steward#getting-started)
-2. Create an env file in the root folder and add the following:
-`
-ENVIRONMENT_URL="https://magento.url"
-ENVIRONMENT_USER="username"
-ENVIRONMENT_EMAIL="useremail"
-ENVIRONMENT_PASS="yourpassword"
-`
-3. Start the testing server. See
-[Steward readme page](https://github.com/lmc-eu/steward#4-run-your-tests)
-4. Run  ./vendor/bin/steward run staging chrome --group="magento_quick_test" -vv for the short test
-5. Run  ./vendor/bin/steward run staging chrome -vv to go trough all the available tests.
+1. Run following commands into plugin folder (as in this repo)
 
-## Problems
+    ```bash
+    npm install cypress --save-dev
+    ```
 
-Since this is a frontend test, its not always consistent, due to delays or some glitches regarding overlapping elements. If you can't get over an issue please open an issue and I'll take a look. 
+2. Copy and rename `cypress.env.json.example` file in the root folder and fill the data as explained bellow:
+```json
+{
+    "ENV_HTTP_AUTH_ENABLED": false, // 'true' if you have HTTP auth when accessing website
+    "ENV_HTTP_USER": "", // if you have HTTP auth when accessing website
+    "ENV_HTTP_PASS": "",
+    "ENV_ADMIN_URL": "", // like http(s)://baseUrl/administrator
+    "ENV_CLIENT_USER": "", // frontend user
+    "ENV_CLIENT_PASS": "",
+    "ENV_ADMIN_USER": "", // admin user
+    "ENV_ADMIN_PASS": "",
+    "REMOTE_LOG_URL": "", // if you want to send log information about framework/shop & paylike module versions
+    "ENV_CURRENCY_TO_CHANGE_WITH": "USD",
+    "ENV_CURRENCIES_TO_TEST": ["USD", "EUR"], // currencies used to make payments with in Full test
+    "ENV_CARD_NUMBER": 4100000000000000,
+    "ENV_CARD_EXPIRY": 1226,
+    "ENV_CARD_CVV": 654
+}
+```
+
+3. Start the Cypress testing server.
+    ```bash
+    npx cypress open
+    ```
+4. In the interface, we can choose which test to run
+
+## Getting Problems?
+
+Since this is a frontend test, its not always consistent, due to delays or some glitches regarding overlapping elements. If you can't get over an issue please open an issue and we'll take a look.
